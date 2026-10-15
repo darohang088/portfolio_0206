@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import PixelSprite from "./PixelSprite";
 import ThemeToggle from "./ThemeToggle";
-import { COIN, COIN_PAL } from "@/lib/sprites";
+import { DARO, DARO_PAL } from "@/lib/sprites";
 import { profile } from "@/data/profile";
 
 const LINKS: { href: string; label: string; page?: boolean }[] = [
@@ -79,7 +79,7 @@ export default function Nav({ home = true }: { home?: boolean }) {
     <header className={`nav${open ? " open" : ""}`}>
       <div className="wrap nav-row">
         <a className="brand" href={`${base}#top`} aria-label={`${profile.name}, back to top`}>
-          <PixelSprite rows={COIN} palette={COIN_PAL} />
+          <PixelSprite rows={DARO} palette={DARO_PAL} className="avatar" />
           {profile.name}
         </a>
         <ul className="links" id="links">
