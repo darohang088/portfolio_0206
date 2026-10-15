@@ -48,7 +48,7 @@ a{color:inherit}
 .nav-row{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:68px}
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-family:var(--f-pixel);font-weight:700;font-size:22px;letter-spacing:.02em}
 .brand canvas{width:32px;height:32px;image-rendering:pixelated;animation:coin 2.4s ease-in-out infinite}
-.brand canvas.avatar{width:32px;height:36px;animation:avatar-bob 1.6s steps(2) infinite}
+.brand .avatar{width:40px;height:40px;image-rendering:pixelated;border:2px solid var(--gold);border-radius:4px;box-shadow:0 3px 0 var(--gold-deep);animation:avatar-bob 1.6s steps(2) infinite}
 @keyframes avatar-bob{50%{transform:translateY(-2px)}}
 @keyframes coin{0%,100%{transform:scaleX(1)}25%{transform:scaleX(.35)}50%{transform:scaleX(-1)}75%{transform:scaleX(-.35)}}
 .links{display:flex;gap:6px;list-style:none;margin:0;padding:0}

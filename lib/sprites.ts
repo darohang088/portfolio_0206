@@ -128,37 +128,3 @@ export const BUBBLE = [
 ];
 export const BUBBLE_PAL: Palette = { o: "#1a1030", w: "#ffffff", b: "#1a1030" };
 
-// Daro from behind, from the desk photo: gold-tipped bun, earphone, black patterned shirt.
-export const DARO = [
-  "......kkkk......",
-  ".....kgggGk.....",
-  "....kgggGGGk....",
-  ".....kgGGGk.....",
-  "......kkkk......",
-  "....kkHgGHkk....",
-  "...kHHhgGhHHk...",
-  "..kHhhhhghhhHk..",
-  "..khhhhhhhhhhk..",
-  ".ksshhhhhhhhssk.",
-  ".ksShhhhhhhhSek.",
-  "..kkhhhhhhhhkek.",
-  "....kSssssSk....",
-  "..kkwwSssSwwkk..",
-  ".kbbbwwwwwwbbbk.",
-  "kbpbbbbppbbbbpbk",
-  "kbbbpbbbbbbpbbbk",
-  "kbpbbbbpbbbbbpbk",
-];
-export const DARO_PAL: Palette = {
-  k: "#1a1030",
-  g: "#f6c453",
-  G: "#c98a1e",
-  h: "#2e2640",
-  H: "#4a3f5e",
-  s: "#c98b5e",
-  S: "#9c623f",
-  w: "#eef0ff",
-  e: "#eef0ff",
-  b: "#2b2838",
-  p: "#55506a",
-};
