@@ -34,70 +34,92 @@ export const stats: Stat[] = [
   { value: 3, suffix: "", label: "apps launched from a blank project" },
 ];
 
-export type Quest = {
-  org: string;
-  logo: string;
-  role: string;
+export type Role = {
+  title: string;
   dates: string;
-  months: number;
-  latest?: boolean;
+  duration: string;
+  location?: string;
   rewards: string[];
+  skills?: string[];
+  moreSkills?: number;
 };
 
-export const quests: Quest[] = [
+// One entry per company, with every role held there (newest first), like LinkedIn.
+export type Company = {
+  org: string;
+  logo: string;
+  employment?: string;
+  total: string;
+  months: number;
+  latest?: boolean;
+  roles: Role[];
+};
+
+export const experience: Company[] = [
   {
     org: "Prince Bank Plc.",
     logo: "/logos/prince-bank.webp",
-    role: "Android Development Engineer",
-    dates: "Feb 2024 – Jan 2026",
-    months: 24,
+    employment: "Full-time",
+    total: "3 yrs 6 mos",
+    months: 42,
     latest: true,
-    rewards: [
-      "Designed, built and improved the bank's Android apps across the full cycle, from user needs to code, tests and documentation.",
-      "Worked on merchant development for the bank's mobile products.",
-    ],
-  },
-  {
-    org: "Prince Bank Plc.",
-    logo: "/logos/prince-bank.webp",
-    role: "Assistant Manager, Android Development",
-    dates: "Aug 2022 – Feb 2024",
-    months: 19,
-    rewards: [
-      "Managed Android development work in Phnom Penh, turning business requirements into app features.",
-    ],
-  },
-  {
-    org: "UDAYA Technology",
-    logo: "/logos/udaya.webp",
-    role: "Senior Android Developer",
-    dates: "Mar 2021 – Nov 2022",
-    months: 21,
-    rewards: [
-      "Launched the Terminal Booking Ticket app from scratch.",
-      "Maintained the logistics internal operations app, handling more than 25k transactions a day.",
-      "Refactored the codebase from a monolith into a multi-module app.",
-      "Released to the Play Store on rotation, and led and mentored the team.",
+    roles: [
+      {
+        title: "Android Development Engineer",
+        dates: "Feb 2024 – Jan 2026",
+        duration: "2 yrs",
+        rewards: [
+          "Designed, built and improved the bank's Android apps across the full cycle, from user needs to code, tests and documentation.",
+          "Worked on merchant development for the bank's mobile products.",
+        ],
+        skills: ["Agile & Waterfall Methodologies", "Object-Oriented Programming (OOP)"],
+        moreSkills: 15,
+      },
+      {
+        title: "Assistant Manager, Android Development",
+        dates: "Aug 2022 – Feb 2024",
+        duration: "1 yr 7 mos",
+        location: "Phnom Penh, Cambodia",
+        rewards: ["Managed Android development work, turning business requirements into app features."],
+        skills: ["XML", "Communication"],
+        moreSkills: 9,
+      },
     ],
   },
   {
     org: "UDAYA Technology",
     logo: "/logos/udaya.webp",
-    role: "Android Developer",
-    dates: "Feb 2020 – Mar 2021",
-    months: 14,
-    rewards: [
-      "Launched the public Logistics app from scratch, now with 100k+ users.",
-      "Launched the Vehicle Tracking app from scratch.",
+    total: "3 yrs",
+    months: 36,
+    roles: [
+      {
+        title: "Senior Android Developer",
+        dates: "Mar 2021 – Nov 2022",
+        duration: "1 yr 9 mos",
+        location: "Toul Kork, Phnom Penh, Cambodia",
+        rewards: [
+          "Launched the Terminal Booking Ticket app from scratch.",
+          "Maintained the logistics internal operations app, handling more than 25k transactions a day.",
+          "Refactored the codebase from a monolith into a multi-module app.",
+          "Released to the Play Store on rotation, and led and mentored the team.",
+        ],
+      },
+      {
+        title: "Android Developer",
+        dates: "Feb 2020 – Mar 2021",
+        duration: "1 yr 2 mos",
+        rewards: [
+          "Launched the public Logistics app from scratch, now with 100k+ users.",
+          "Launched the Vehicle Tracking app from scratch.",
+        ],
+      },
+      {
+        title: "Android Developer Intern",
+        dates: "Dec 2019 – Feb 2020",
+        duration: "3 mos",
+        rewards: ["First quest: joined the Android team and shipped my first features."],
+      },
     ],
-  },
-  {
-    org: "UDAYA Technology",
-    logo: "/logos/udaya.webp",
-    role: "Android Developer Intern",
-    dates: "Dec 2019 – Feb 2020",
-    months: 3,
-    rewards: ["First quest: joined the Android team and shipped my first features."],
   },
 ];
 

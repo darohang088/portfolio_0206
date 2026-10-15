@@ -154,8 +154,26 @@ h2 em{font-style:normal;color:var(--gold-text)}
 .quest li::before{content:"";position:absolute;left:2px;top:.62em;width:8px;height:8px;background:var(--pink)}
 .qxp{display:flex;align-items:center;gap:12px;font-family:var(--f-pixel);font-size:12px;color:var(--muted);letter-spacing:.08em}
 .qxp .bar{flex:1;max-width:320px;height:12px;background:var(--empty);border:2px solid var(--shadow);position:relative}
-.qxp .bar i{position:absolute;inset:0 auto 0 0;width:calc(var(--m) / 24 * 100%);background:repeating-linear-gradient(90deg,var(--mint) 0 8px,#4fb59c 8px 10px)}
-@media (max-width:560px){.dates{margin-left:0;width:100%}.quests{padding-left:30px}.quest::before{left:-31px}.quests::before{left:7px}.quest{padding:18px}}
+.qxp .bar i{position:absolute;inset:0 auto 0 0;width:calc(var(--m) * 100%);background:repeating-linear-gradient(90deg,var(--mint) 0 8px,#4fb59c 8px 10px)}
+.co-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.co-logo{width:60px;height:60px}
+.co-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.co-name{font-family:var(--f-pixel);font-weight:700;font-size:clamp(18px,2.2vw,22px);letter-spacing:.04em;color:var(--sky-text);line-height:1.25}
+.co-meta{font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums}
+.roles{list-style:none;margin:20px 0 16px;padding:0 0 0 30px;position:relative;display:grid;gap:22px}
+.roles::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:3px;background:repeating-linear-gradient(180deg,var(--line) 0 6px,transparent 6px 10px)}
+.role{position:relative}
+.role::before{content:"";position:absolute;left:-30px;top:6px;width:13px;height:13px;background:var(--panel);border:3px solid var(--mint)}
+.quest:not(.done) .role:first-child::before{background:var(--gold);border-color:var(--gold)}
+.role h3{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(18px,2.2vw,23px);line-height:1.25}
+.role-meta{margin:4px 0 10px;font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums}
+.role-loc{display:block}
+.role ul{margin:0}
+.role-skills{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px}
+.role-skills::before{content:"";width:10px;height:10px;background:var(--gold);transform:rotate(45deg);margin-right:4px}
+.role-skills span{font-size:14px;font-weight:600;background:var(--panel-2);border:2px solid var(--line);padding:2px 8px;border-radius:3px}
+.role-skills .more{color:var(--gold-text);border-style:dashed}
+@media (max-width:560px){.roles{padding-left:24px}.role::before{left:-24px}.roles::before{left:5px}.co-head .chip{order:-1;flex-basis:100%;width:max-content;flex-grow:0}.dates{margin-left:0;width:100%}.quests{padding-left:30px}.quest::before{left:-31px}.quests::before{left:7px}.quest{padding:18px}}
 
 /* trophies */
 .trophies{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;perspective:900px}
