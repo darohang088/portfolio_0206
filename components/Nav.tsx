@@ -6,13 +6,14 @@ import ThemeToggle from "./ThemeToggle";
 import { COIN, COIN_PAL } from "@/lib/sprites";
 import { profile } from "@/data/profile";
 
-const LINKS = [
+const LINKS: { href: string; label: string; page?: boolean }[] = [
   { href: "#quests", label: "Quests" },
   { href: "#trophies", label: "Trophies" },
   { href: "#apps", label: "My App" },
   { href: "#inventory", label: "Inventory" },
   { href: "#blogs", label: "Blogs" },
   { href: "#contact", label: "Contact" },
+  { href: "/test", label: "Test", page: true },
 ];
 
 // On other pages (like an app's detail page) the links point back to sections of the home page.
@@ -51,7 +52,7 @@ export default function Nav({ home = true }: { home?: boolean }) {
         <ul className="links" id="links">
           {LINKS.map((l) => (
             <li key={l.href}>
-              <a href={`${base}${l.href}`} onClick={() => setOpen(false)}>
+              <a href={l.page ? l.href : `${base}${l.href}`} onClick={() => setOpen(false)}>
                 {l.label}
               </a>
             </li>
