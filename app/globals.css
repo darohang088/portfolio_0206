@@ -427,3 +427,16 @@ footer{border-top:3px solid var(--line);padding-block:30px 40px;color:var(--mute
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}
   html{scroll-behavior:auto}
 }
+
+/* spam-click warning on the Test page */
+.btn[aria-disabled="true"]{filter:grayscale(.7);opacity:.7;cursor:not-allowed}
+.spam-dialog{max-width:min(440px,calc(100vw - 32px));padding:24px;background:var(--dialog-bg);color:var(--text);border:4px solid var(--pink);border-radius:8px;box-shadow:0 0 0 4px var(--dialog-bg),10px 10px 0 4px rgba(0,0,0,.4);text-align:center}
+.spam-dialog[open]{animation:spam-shake .5s steps(6)}
+.spam-dialog::backdrop{background:rgba(6,7,26,.75)}
+.spam-dialog h3{margin:.2em 0 .5em;font-size:26px}
+.spam-dialog p{margin:0 0 .7em;line-height:1.5}
+.spam-tag{display:inline-block;padding:2px 10px;background:var(--pink);color:#1a1030;font-family:var(--f-pixel);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.spam-timer{font-size:20px;color:var(--gold-text);font-variant-numeric:tabular-nums}
+.spam-dialog .btn{margin-top:6px}
+@keyframes spam-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@media (prefers-reduced-motion:reduce){.spam-dialog[open]{animation:none}}

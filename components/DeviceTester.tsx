@@ -10,6 +10,10 @@ const OUTER_H = H + FRAME;
 const GAP = 20;
 const MAX_PER_ROW = 4;
 const MAX_SCREENS = 12;
+// Rapid-click guard: this many Renders inside the window triggers a cooldown.
+const SPAM_CLICKS = 5;
+const SPAM_WINDOW = 4000;
+const COOLDOWN = 10;
 
 // Turn "example.com" into "https://example.com/". Only http(s) links are allowed.
 export function normalizeUrl(input: string): string | null {
@@ -37,6 +41,17 @@ export default function DeviceTester() {
   const [reloads, setReloads] = useState(0);
   const [width, setWidth] = useState(0);
   const grid = useRef<HTMLDivElement>(null);
+  const clicks = useRef<number[]>([]);
+  const [cooldown, setCooldown] = useState(0);
+  const [spamCount, setSpamCount] = useState(0);
+  const warn = useRef<HTMLDialogElement>(null);
+
+  // Count the cooldown down once a second; the Render button stays locked until it hits 0.
+  useEffect(() => {
+    if (!cooldown) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   useEffect(() => {
     const el = grid.current;
@@ -60,6 +75,14 @@ export default function DeviceTester() {
 
   const render = (e: React.FormEvent) => {
     e.preventDefault();
+    const now = Date.now();
+    clicks.current = [...clicks.current.filter((t) => now - t < SPAM_WINDOW), now];
+    if (cooldown || clicks.current.length >= SPAM_CLICKS) {
+      setSpamCount(clicks.current.length);
+      if (!cooldown) setCooldown(COOLDOWN);
+      if (!warn.current?.open) warn.current?.showModal();
+      return;
+    }
     const n = normalizeUrl(input);
     if (!n) {
       setError("Enter a web address, like example.com or https://example.com");
@@ -114,8 +137,8 @@ export default function DeviceTester() {
             onBlur={() => setCountInput(String(clampScreens(Number(countInput))))}
           />
         </label>
-        <button className="btn btn-gold" type="submit">
-          Render ▶
+        <button className="btn btn-gold" type="submit" aria-disabled={cooldown > 0 || undefined}>
+          {cooldown ? `Wait ${cooldown}s` : "Render ▶"}
         </button>
       </form>
       <p className="tester-err" id="testErr" role="alert">
@@ -165,6 +188,19 @@ export default function DeviceTester() {
           </div>
         ))}
       </div>
+      <dialog className="spam-dialog" ref={warn} aria-labelledby="spamTitle" onClick={(e) => e.target === e.currentTarget && warn.current?.close()}>
+        <p className="spam-tag">⚠ Spam detected</p>
+        <h3 id="spamTitle">Whoa, slow down!</h3>
+        <p>
+          You hit Render <b>{spamCount} times</b> in a few seconds. Every click reloads all the phone screens, and that makes this page lag.
+        </p>
+        <p>Dororo has locked the button to cool things down.</p>
+        <p className="spam-timer">{cooldown ? `Try again in ${cooldown}s` : "You can render again now."}</p>
+        <button className="btn btn-gold" type="button" autoFocus onClick={() => warn.current?.close()}>
+          OK, I'll wait
+        </button>
+      </dialog>
+
       <p className="tester-note">
         Some websites block being shown inside other pages, so they stay blank here. Use <b>Open in new tab</b> for those.
       </p>
