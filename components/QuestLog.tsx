@@ -19,7 +19,7 @@ export default function QuestLog() {
                 <img className="logo-tile co-logo" src={c.logo} alt={`${c.org} logo`} width={60} height={60} loading="lazy" />
                 <div className="co-info">
                   <span className="co-name">{c.org}</span>
-                  <span className="co-meta">{[c.employment, c.total].filter(Boolean).join(" · ")}</span>
+                  <span className="co-meta">{[c.employment, c.total, c.workplace].filter(Boolean).join(" · ")}</span>
                 </div>
                 <span className={`chip ${c.latest ? "latest" : "complete"}`}>{c.latest ? "Latest quest" : "Complete"}</span>
               </div>
@@ -31,11 +31,24 @@ export default function QuestLog() {
                       {r.dates} · {r.duration}
                       {r.location && <span className="role-loc">{r.location}</span>}
                     </p>
-                    <ul>
-                      {r.rewards.map((x) => (
-                        <li key={x}>{x}</li>
-                      ))}
-                    </ul>
+                    {r.summary && <p className="role-summary">{r.summary}</p>}
+                    {r.rewards && (
+                      <ul>
+                        {r.rewards.map((x) => (
+                          <li key={x}>{x}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {r.sections?.map((sec) => (
+                      <div className="role-sec" key={sec.title}>
+                        <h4>{sec.title}</h4>
+                        <ul>
+                          {sec.items.map((x) => (
+                            <li key={x}>{x}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
                     {r.skills && <RoleSkills skills={r.skills} total={r.skillTotal} />}
                   </li>
                 ))}

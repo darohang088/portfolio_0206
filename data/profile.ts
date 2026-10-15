@@ -39,7 +39,10 @@ export type Role = {
   dates: string;
   duration: string;
   location?: string;
-  rewards: string[];
+  summary?: string;
+  // Either a plain list of highlights, or titled groups like "Key responsibilities".
+  rewards?: string[];
+  sections?: { title: string; items: string[] }[];
   // Skills for this role. If LinkedIn lists more than are written here, set skillTotal.
   skills?: string[];
   skillTotal?: number;
@@ -55,6 +58,8 @@ export const skillKinds: Record<string, "tech" | "tool" | "team"> = {
   Android: "tech",
   "Unit Testing": "tech",
   SQLite: "tech",
+  Java: "tech",
+  Kotlin: "tech",
   "Power BI": "tool",
   "Agile & Waterfall Methodologies": "team",
   Communication: "team",
@@ -65,6 +70,7 @@ export type Company = {
   org: string;
   logo: string;
   employment?: string;
+  workplace?: string;
   total: string;
   months: number;
   latest?: boolean;
@@ -114,8 +120,10 @@ export const experience: Company[] = [
     ],
   },
   {
-    org: "UDAYA Technology",
+    org: "UDAYA Technology Co., Ltd.",
     logo: "/logos/udaya.webp",
+    employment: "Full-time",
+    workplace: "On-site",
     total: "3 yrs",
     months: 36,
     roles: [
@@ -123,28 +131,45 @@ export const experience: Company[] = [
         title: "Senior Android Developer",
         dates: "Mar 2021 – Nov 2022",
         duration: "1 yr 9 mos",
-        location: "Toul Kork, Phnom Penh, Cambodia",
-        rewards: [
-          "Launched the Terminal Booking Ticket app from scratch.",
-          "Maintained the logistics internal operations app, handling more than 25k transactions a day.",
-          "Refactored the codebase from a monolith into a multi-module app.",
-          "Released to the Play Store on rotation, and led and mentored the team.",
+        location: "1st Floor, #3, St 259, Sangkat Teuk Laak 1, Khan Toul Kork, Phnom Penh, Cambodia",
+        sections: [
+          {
+            title: "Key responsibilities",
+            items: [
+              "Worked closely with project managers, designers and the QA team to build new project features.",
+              "Kept project dependencies up to date.",
+              "Refactored the codebase from a monolithic app into a multi-module application.",
+              "Released the project to the Play Store on a rotation.",
+            ],
+          },
+          {
+            title: "Key accomplishments",
+            items: [
+              "Launched the Terminal Booking Ticket app from scratch.",
+              "Maintained and updated the Logistic Internal Operation App, which handles more than 25k transactions a day.",
+              "Found innovative ideas and built proofs of concept to match project requirements.",
+              "Led and mentored the team.",
+            ],
+          },
         ],
       },
       {
         title: "Android Developer",
         dates: "Feb 2020 – Mar 2021",
         duration: "1 yr 2 mos",
-        rewards: [
-          "Launched the public Logistics app from scratch, now with 100k+ users.",
-          "Launched the Vehicle Tracking app from scratch.",
+        summary: "Built new features to improve the user experience of the Logistic Internal App and the public app.",
+        sections: [
+          {
+            title: "Key accomplishments",
+            items: ["Launched the Logistic App from scratch, now with 100k+ users.", "Launched the Vehicle Tracking App from scratch."],
+          },
         ],
       },
       {
         title: "Android Developer Intern",
         dates: "Dec 2019 – Feb 2020",
         duration: "3 mos",
-        rewards: ["First quest: joined the Android team and shipped my first features."],
+        skills: ["Java", "Kotlin"],
       },
     ],
   },
