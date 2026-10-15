@@ -1,6 +1,6 @@
 // Cloudflare Workers config: serves the static site built into `out/`.
 {
-  "name": "hang-daro-portfolio",
+  "name": "portfolio-0206",
   "compatibility_date": "2025-09-01",
   "assets": {
     "directory": "./out",
