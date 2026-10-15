@@ -20,7 +20,40 @@ const LINKS: { href: string; label: string; page?: boolean }[] = [
 export default function Nav({ home = true }: { home?: boolean }) {
   const base = home ? "" : "/";
   const [open, setOpen] = useState(false);
+  const [active, setActive] = useState("");
   const bar = useRef<HTMLElement>(null);
+  const lockUntil = useRef(0);
+
+  // Highlight the link for the page or section you're on: Test on /test, My App on an
+  // app's page, and on the home page whichever section has scrolled under the nav.
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path.startsWith("/test")) return setActive("/test");
+    if (path.startsWith("/apps")) return setActive("#apps");
+    const ids = LINKS.filter((l) => !l.page).map((l) => l.href);
+    let frame = 0;
+    const spy = () => {
+      frame = 0;
+      if (Date.now() < lockUntil.current) return;
+      let cur = "";
+      for (const id of ids) {
+        const el = document.querySelector(id);
+        if (el && el.getBoundingClientRect().top <= 140) cur = id;
+      }
+      const h = document.documentElement;
+      if (h.scrollTop + h.clientHeight >= h.scrollHeight - 4) cur = ids[ids.length - 1];
+      setActive(cur);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(spy);
+    };
+    spy();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
 
   // Update the XP bar once per frame on the compositor, without re-rendering the nav.
   useEffect(() => {
@@ -52,7 +85,17 @@ export default function Nav({ home = true }: { home?: boolean }) {
         <ul className="links" id="links">
           {LINKS.map((l) => (
             <li key={l.href}>
-              <a href={l.page ? l.href : `${base}${l.href}`} onClick={() => setOpen(false)}>
+              <a
+                href={l.page ? l.href : `${base}${l.href}`}
+                className={active === l.href ? "active" : undefined}
+                aria-current={active === l.href ? (l.page ? "page" : "location") : undefined}
+                onClick={() => {
+                  setOpen(false);
+                  setActive(l.href);
+                  // Keep the clicked link lit while the page smooth-scrolls past other sections.
+                  lockUntil.current = Date.now() + 1200;
+                }}
+              >
                 {l.label}
               </a>
             </li>
