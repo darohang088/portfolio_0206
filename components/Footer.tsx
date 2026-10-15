@@ -5,7 +5,7 @@ export default function Footer() {
     <footer>
       <div className="wrap foot">
         <span>
-          © {new Date().getFullYear()} {profile.name} · Built pixel by pixel
+          © {new Date().getFullYear()} {profile.name}
         </span>
         <span className="press">Press start to continue</span>
       </div>
