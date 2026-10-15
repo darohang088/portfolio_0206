@@ -37,13 +37,10 @@ export default function ChatWidget() {
   const nameInput = useRef<HTMLInputElement>(null);
   const msgInput = useRef<HTMLTextAreaElement>(null);
 
-  // Show the button once the visitor scrolls past most of the hero (always on other pages).
+  // Pop the button in shortly after the page loads.
   useEffect(() => {
-    const hero = document.querySelector<HTMLElement>(".hero");
-    const update = () => setVisible(!hero || window.scrollY > hero.offsetHeight * 0.6);
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
+    const t = setTimeout(() => setVisible(true), 1000);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
