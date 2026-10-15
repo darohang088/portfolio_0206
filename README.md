@@ -43,10 +43,15 @@ npm run dev
 
 Then open http://localhost:3000.
 
-## Deploy on Vercel
+## Deploy on Cloudflare
 
-1. Go to [vercel.com](https://vercel.com) and sign in with GitHub.
-2. Click **Add New → Project** and import `portfolio_0206`.
-3. Click **Deploy**. Vercel detects Next.js automatically.
+The site is exported as static files into `out/` (see `next.config.mjs`), and `wrangler.jsonc` tells Cloudflare to serve that folder.
 
-Every push to `main` redeploys the site.
+1. In the [Cloudflare dashboard](https://dash.cloudflare.com), go to **Workers & Pages → Create → Import a repository**.
+2. Connect GitHub and pick `portfolio_0206`.
+3. Use these settings:
+   - **Build command:** `npm run build`
+   - **Deploy command:** `npx wrangler deploy`
+4. Click **Deploy**. You get a free `*.workers.dev` link, and every push to `main` redeploys.
+
+To deploy from your own computer instead: `npm run build`, then `npx wrangler login` and `npx wrangler deploy`.
