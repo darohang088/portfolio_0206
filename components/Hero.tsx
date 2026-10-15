@@ -39,8 +39,9 @@ export default function Hero() {
       <div className="shipped wrap">
         <span className="shipped-label">Shipped apps at</span>
         {profile.companies.map((c) => (
-          <span key={c} className="mark">
-            {c}
+          <span key={c.name} className="mark">
+            <img className="logo-tile" src={c.logo} alt="" width={44} height={44} />
+            {c.name}
           </span>
         ))}
       </div>

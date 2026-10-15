@@ -11,6 +11,7 @@ export default function SavePoints() {
         <div className="saves">
           {education.map((e) => (
             <div className="save" key={e.title} data-reveal>
+              <img className="logo-tile logo-lg" src={e.logo} alt={`${e.school} logo`} width={72} height={72} loading="lazy" />
               <span className="save-tag">{e.tag}</span>
               <h3>{e.title}</h3>
               <p>{e.school}</p>

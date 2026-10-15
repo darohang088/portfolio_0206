@@ -13,7 +13,10 @@ export const profile = {
   ],
   summary:
     "I'm an Android Development Engineer in Phnom Penh, building with Flutter and native Android. I handle the whole journey: understanding what users need, writing the code, testing it and documenting it. I care about apps that feel smooth and run efficiently.",
-  companies: ["Prince Bank", "UDAYA Technology"],
+  companies: [
+    { name: "Prince Bank", logo: "/logos/prince-bank.webp" },
+    { name: "UDAYA Technology", logo: "/logos/udaya.webp" },
+  ],
   email: "darohang009988@gmail.com",
   linkedin: {
     label: "linkedin.com/in/hang-daro-9386b01b5",
@@ -33,6 +36,7 @@ export const stats: Stat[] = [
 
 export type Quest = {
   org: string;
+  logo: string;
   role: string;
   dates: string;
   months: number;
@@ -43,6 +47,7 @@ export type Quest = {
 export const quests: Quest[] = [
   {
     org: "Prince Bank Plc.",
+    logo: "/logos/prince-bank.webp",
     role: "Android Development Engineer",
     dates: "Feb 2024 – Jan 2026",
     months: 24,
@@ -54,6 +59,7 @@ export const quests: Quest[] = [
   },
   {
     org: "Prince Bank Plc.",
+    logo: "/logos/prince-bank.webp",
     role: "Assistant Manager, Android Development",
     dates: "Aug 2022 – Feb 2024",
     months: 19,
@@ -63,6 +69,7 @@ export const quests: Quest[] = [
   },
   {
     org: "UDAYA Technology",
+    logo: "/logos/udaya.webp",
     role: "Senior Android Developer",
     dates: "Mar 2021 – Nov 2022",
     months: 21,
@@ -75,6 +82,7 @@ export const quests: Quest[] = [
   },
   {
     org: "UDAYA Technology",
+    logo: "/logos/udaya.webp",
     role: "Android Developer",
     dates: "Feb 2020 – Mar 2021",
     months: 14,
@@ -85,6 +93,7 @@ export const quests: Quest[] = [
   },
   {
     org: "UDAYA Technology",
+    logo: "/logos/udaya.webp",
     role: "Android Developer Intern",
     dates: "Dec 2019 – Feb 2020",
     months: 3,
@@ -153,7 +162,7 @@ export const skills: Skill[] = [
   { name: "Working with PM, Design & QA", kind: "Teamwork", level: 9 },
 ];
 
-export type SavePoint = { tag: string; title: string; school: string; years: string };
+export type SavePoint = { tag: string; title: string; school: string; years: string; logo: string };
 
 export const education: SavePoint[] = [
   {
@@ -161,18 +170,21 @@ export const education: SavePoint[] = [
     title: "Master's degree, Computer Science",
     school: "University of Puthisastra",
     years: "2023 – 2026",
+    logo: "/logos/puthisastra.webp",
   },
   {
     tag: "Saved",
     title: "Bachelor of Management Information Systems",
-    school: "Management Information Systems",
+    school: "SETEC Institute",
     years: "2017 – 2022",
+    logo: "/logos/setec.webp",
   },
   {
     tag: "Saved",
     title: "General Education",
     school: "BELTEI International School",
     years: "2012 – 2016",
+    logo: "/logos/beltei.webp",
   },
 ];
 

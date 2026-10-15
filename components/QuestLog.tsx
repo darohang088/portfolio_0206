@@ -12,6 +12,7 @@ export default function QuestLog() {
           {quests.map((q) => (
             <li className={`quest${q.latest ? "" : " done"}`} key={q.role} data-reveal>
               <div className="q-top">
+                <img className="logo-tile" src={q.logo} alt={`${q.org} logo`} width={48} height={48} loading="lazy" />
                 <span className={`chip ${q.latest ? "latest" : "complete"}`}>
                   {q.latest ? "Latest quest" : "Complete"}
                 </span>
