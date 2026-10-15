@@ -111,3 +111,19 @@ export const MOON = Array.from({ length: 11 }, (_, y) =>
   }).join(""),
 );
 export const MOON_PAL: Palette = { m: "#4a4f9a", d: "#7d84c9", s: "#e0a21a" };
+
+// Speech bubble for the message button.
+export const BUBBLE = [
+  "..ooooooooo..",
+  ".owwwwwwwwwo.",
+  "owwwwwwwwwwwo",
+  "owwwwwwwwwwwo",
+  "owwbwwbwwbwwo",
+  "owwwwwwwwwwwo",
+  "owwwwwwwwwwwo",
+  ".owwwwwwwwwo.",
+  "..oowoooooo..",
+  "...owo.......",
+  "...oo........",
+];
+export const BUBBLE_PAL: Palette = { o: "#1a1030", w: "#ffffff", b: "#1a1030" };

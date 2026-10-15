@@ -43,6 +43,22 @@ npm run dev
 
 Then open http://localhost:3000.
 
+## Messages to Telegram
+
+The chat button (bottom-left) sends visitors' messages to `/api/message`. A small Cloudflare Worker (`worker/index.ts`) forwards them to your Telegram through a bot. Visitors leave an email or a Telegram @username, and you reply to them there.
+
+One-time setup:
+
+1. In Telegram, open **@BotFather**, send `/newbot` and follow the steps. Copy the **bot token** it gives you.
+2. Open your new bot and press **Start** (send it any message).
+3. Find your **chat id**: open **@userinfobot** in Telegram and press Start. It replies with your id (a number).
+4. In the Cloudflare dashboard, open **portfolio-0206 → Settings → Variables and Secrets** and add two **Secrets**:
+   - `TELEGRAM_BOT_TOKEN`: the bot token
+   - `TELEGRAM_CHAT_ID`: your chat id
+5. Redeploy (or push any commit). Send yourself a test message from the site.
+
+Until the secrets are set, the chat shows a friendly "please email instead" message.
+
 ## Deploy on Cloudflare
 
 The site is exported as static files into `out/` (see `next.config.mjs`), and `wrangler.jsonc` tells Cloudflare to serve that folder.

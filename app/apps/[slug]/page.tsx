@@ -4,6 +4,7 @@ import Nav from "@/components/Nav";
 import AppDetail from "@/components/AppDetail";
 import Footer from "@/components/Footer";
 import ClickSparks from "@/components/ClickSparks";
+import ChatWidget from "@/components/ChatWidget";
 import { apps, profile } from "@/data/profile";
 
 type Params = { slug: string };
@@ -28,6 +29,7 @@ export default async function AppPage({ params }: { params: Promise<Params> }) {
       <AppDetail app={app} />
       <Footer />
       <ClickSparks />
+      <ChatWidget />
     </>
   );
 }

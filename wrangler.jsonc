@@ -1,9 +1,12 @@
-// Cloudflare Workers config: serves the static site built into `out/`.
+// Cloudflare Workers config: a small Worker (worker/index.ts) handles /api/message
+// and serves the static site built into `out/` for everything else.
 {
   "name": "portfolio-0206",
+  "main": "worker/index.ts",
   "compatibility_date": "2025-09-01",
   "assets": {
     "directory": "./out",
+    "binding": "ASSETS",
     "not_found_handling": "404-page"
   }
 }

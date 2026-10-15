@@ -11,6 +11,7 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import ClickSparks from "@/components/ClickSparks";
+import ChatWidget from "@/components/ChatWidget";
 
 export default function Home() {
   return (
@@ -30,6 +31,7 @@ export default function Home() {
       <Footer />
       <Reveal />
       <ClickSparks />
+      <ChatWidget />
     </>
   );
 }
