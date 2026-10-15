@@ -81,6 +81,12 @@ a{color:inherit}
 .title{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(34px,11.5vw,124px);line-height:1;letter-spacing:.01em;display:flex;flex-wrap:nowrap;white-space:nowrap;justify-content:center;column-gap:.28em}
 .word{display:inline-flex}
 .ch{display:inline-block;position:relative;animation:drop .8s cubic-bezier(.3,1.7,.5,1) both;animation-delay:calc(var(--i)*80ms)}
+/* Hover a letter: it hops up with a bounce, tilts and lights up (uses translate/rotate/scale so it doesn't fight the drop-in animation). */
+.ch{transition:translate .35s cubic-bezier(.3,1.8,.5,1),rotate .35s cubic-bezier(.3,1.8,.5,1),scale .35s cubic-bezier(.3,1.8,.5,1);cursor:default}
+.ch:hover{translate:0 -.14em;rotate:-6deg;scale:1.1;transition-duration:.18s}
+.ch:hover .ch-f{background-image:linear-gradient(110deg,transparent 0 42%,rgba(255,255,255,.95) 46% 50%,transparent 54% 100%),linear-gradient(180deg,#fff7d6 0 24%,#ffe58a 24% 54%,#ffc35c 54% 78%,#f59a45 78% 100%)}
+.ch:nth-child(even):hover{rotate:6deg}
+@media (prefers-reduced-motion:reduce){.ch,.ch:hover{translate:none;rotate:none;scale:none}}
 .ch-o{position:absolute;left:0;top:0;color:var(--plum);text-shadow:4px 0px 0 var(--plum),-4px 0px 0 var(--plum),0px 4px 0 var(--plum),0px -4px 0 var(--plum),4px 4px 0 var(--plum),-4px 4px 0 var(--plum),4px -4px 0 var(--plum),-4px -4px 0 var(--plum),0 8px 0 rgba(20,10,40,.55),4px 8px 0 rgba(20,10,40,.55),-4px 8px 0 rgba(20,10,40,.55),0 12px 0 rgba(20,10,40,.4);pointer-events:none}
 .ch-f{position:relative;display:block;color:transparent;-webkit-background-clip:text;background-clip:text;background-image:linear-gradient(110deg,transparent 0 42%,rgba(255,255,255,.95) 46% 50%,transparent 54% 100%),linear-gradient(180deg,var(--gold-hi) 0 24%,#ffd659 24% 54%,#f6a93b 54% 78%,#e07b2c 78% 100%);background-size:300% 100%,100% 100%;background-position:100% 0,0 0;animation:shine 5s linear infinite;animation-delay:calc(1.4s + var(--i)*70ms)}
 @keyframes drop{from{transform:translateY(-90px);opacity:0}60%{opacity:1}to{transform:none;opacity:1}}
