@@ -53,7 +53,7 @@ a{color:inherit}
 @keyframes coin{0%,100%{transform:scaleX(1)}25%{transform:scaleX(.35)}50%{transform:scaleX(-1)}75%{transform:scaleX(-.35)}}
 .links{display:flex;gap:6px;list-style:none;margin:0;padding:0}
 .links a{display:block;padding:8px 12px;font-family:var(--f-pixel);font-size:14px;text-decoration:none;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;border-radius:4px}
-.links a:hover,.links a.active{color:var(--gold-text);background:var(--nav-hi,var(--panel))}
+.links a:hover,.links a.active,.theme-pick-btn:hover,.theme-pick-btn.active{color:var(--gold-text);background:var(--nav-hi,var(--panel))}
 .links{margin-left:auto}
 .nav-actions{display:flex;align-items:center;gap:8px}
 .theme-btn{display:grid;place-items:center;width:42px;height:42px;padding:0;background:var(--panel);border:3px solid var(--line);border-radius:6px;box-shadow:0 3px 0 var(--shadow);cursor:pointer;transition:transform .1s ease-out}
@@ -448,3 +448,25 @@ footer{border-top:3px solid var(--line);padding-block:30px 40px;color:var(--mute
 .spam-dialog .btn{margin-top:6px}
 @keyframes spam-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
 @media (prefers-reduced-motion:reduce){.spam-dialog[open]{animation:none}}
+
+/* Theme menu: pick the hero background */
+.theme-pick{position:relative}
+.theme-pick-btn{display:block;padding:8px 12px;line-height:inherit;font-family:var(--f-pixel);font-size:14px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;border-radius:4px;background:none;border:0;cursor:pointer}
+.theme-menu{position:absolute;right:0;top:calc(100% + 14px);z-index:60;width:300px;padding:14px;background:var(--dialog-bg);border:3px solid var(--line);border-radius:8px;box-shadow:0 6px 0 var(--shadow)}
+.theme-menu ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.theme-menu-title{margin:0 0 10px;font-family:var(--f-pixel);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-text)}
+.theme-menu-more{margin:10px 0 0;font-size:13px;color:var(--muted)}
+.theme-card{display:grid;grid-template-columns:1fr auto;gap:6px 10px;width:100%;padding:8px;background:var(--panel);border:3px solid var(--line);border-radius:6px;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.theme-card:hover{border-color:var(--gold)}
+.theme-card.on{border-color:var(--gold);box-shadow:0 3px 0 var(--gold-deep)}
+.theme-card img{grid-column:1/-1;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated;border-radius:3px}
+.theme-name{font-size:15px}
+.theme-state{font-family:var(--f-pixel);font-size:12px;color:var(--muted);align-self:center}
+.theme-card.on .theme-state{color:var(--mint-text)}
+.hero-bg{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center;image-rendering:pixelated}
+.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(6,7,26,.45),rgba(6,7,26,.3) 60%,var(--bg))}
+.hero:has(.hero-bg) .eyebrow-hero{color:#fff3c4;text-shadow:0 2px 0 #1a1030}
+@media (max-width:820px){
+  .theme-pick-btn{width:100%;padding:12px;text-align:left}
+  .theme-menu{position:static;width:auto;margin-top:6px;box-shadow:none}
+}

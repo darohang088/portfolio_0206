@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
+import ThemePicker from "./ThemePicker";
 import { profile } from "@/data/profile";
 
 const LINKS: { href: string; label: string; page?: boolean }[] = [
@@ -99,6 +100,9 @@ export default function Nav({ home = true }: { home?: boolean }) {
               </a>
             </li>
           ))}
+          <li>
+            <ThemePicker onPick={() => setOpen(false)} />
+          </li>
         </ul>
         <div className="nav-actions">
           <ThemeToggle />
