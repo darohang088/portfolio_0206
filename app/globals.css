@@ -464,8 +464,9 @@ footer{border-top:3px solid var(--line);padding-block:30px 40px;color:var(--mute
 .theme-state{font-family:var(--f-pixel);font-size:12px;color:var(--muted);align-self:center}
 .theme-card.on .theme-state{color:var(--mint-text)}
 .hero-bg{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center;image-rendering:pixelated}
-.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(6,7,26,.45),rgba(6,7,26,.3) 60%,var(--bg))}
-.hero:has(.hero-bg) .eyebrow-hero{color:#fff3c4;text-shadow:0 2px 0 #1a1030}
+.hero-bg::after,.hero-shade{content:"";position:absolute;inset:0;background:linear-gradient(rgba(6,7,26,.45),rgba(6,7,26,.3) 60%,var(--bg))}
+.hero-shade{z-index:-1;pointer-events:none}
+.hero:has(.hero-bg) .eyebrow-hero,.hero:has(.hero-shade) .eyebrow-hero{color:#fff3c4;text-shadow:0 2px 0 #1a1030}
 @media (max-width:820px){
   .theme-pick-btn{width:100%;padding:12px;text-align:left}
   .theme-menu{position:static;width:auto;margin-top:6px;box-shadow:none}
