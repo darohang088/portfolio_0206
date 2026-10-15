@@ -436,7 +436,10 @@ footer{border-top:3px solid var(--line);padding-block:30px 40px;color:var(--mute
 .spam-dialog h3{margin:.2em 0 .5em;font-size:26px}
 .spam-dialog p{margin:0 0 .7em;line-height:1.5}
 .spam-tag{display:inline-block;padding:2px 10px;background:var(--pink);color:#1a1030;font-family:var(--f-pixel);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
-.spam-sent{padding:8px 10px;border:2px dashed var(--pink);font-weight:700}
+.spam-term{margin:4px 0 14px;padding:12px;min-height:150px;background:#05060f;border:2px solid #2a2f63;color:#4ef08f;font-family:ui-monospace,"Courier New",monospace;font-size:12px;line-height:1.7;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}
+.spam-term .spam-sent{margin-top:6px;color:#ff5c7a;font-weight:700;animation:spam-blink 1s steps(2) 3}
+.spam-cursor{display:inline-block;width:8px;height:14px;background:#4ef08f;vertical-align:middle;animation:spam-blink .8s steps(2) infinite}
+@keyframes spam-blink{50%{opacity:0}}
 .spam-timer{font-size:20px;color:var(--gold-text);font-variant-numeric:tabular-nums}
 .spam-dialog .btn{margin-top:6px}
 @keyframes spam-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}

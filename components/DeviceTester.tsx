@@ -14,6 +14,13 @@ const MAX_SCREENS = 12;
 const SPAM_CLICKS = 5;
 const SPAM_WINDOW = 4000;
 const COOLDOWN = 10;
+// Lines typed out one by one in the spam warning's "terminal".
+const TRACE = [
+  "> Tracing IP address ..... FOUND",
+  "> Locating lat, long ..... FOUND",
+  "> Copying cookies ........ DONE",
+  "> Sending report to Daro . 100%",
+];
 
 // Turn "example.com" into "https://example.com/". Only http(s) links are allowed.
 export function normalizeUrl(input: string): string | null {
@@ -45,6 +52,14 @@ export default function DeviceTester() {
   const [cooldown, setCooldown] = useState(0);
   const [spamCount, setSpamCount] = useState(0);
   const warn = useRef<HTMLDialogElement>(null);
+  const [trace, setTrace] = useState(0);
+
+  // Type the trace lines one at a time after the warning opens.
+  useEffect(() => {
+    if (!trace || trace > TRACE.length) return;
+    const t = setTimeout(() => setTrace((n) => n + 1), 550);
+    return () => clearTimeout(t);
+  }, [trace]);
 
   // Count the cooldown down once a second; the Render button stays locked until it hits 0.
   useEffect(() => {
@@ -80,7 +95,10 @@ export default function DeviceTester() {
     if (cooldown || clicks.current.length >= SPAM_CLICKS) {
       setSpamCount(clicks.current.length);
       if (!cooldown) setCooldown(COOLDOWN);
-      if (!warn.current?.open) warn.current?.showModal();
+      if (!warn.current?.open) {
+        setTrace(1);
+        warn.current?.showModal();
+      }
       return;
     }
     const n = normalizeUrl(input);
@@ -190,12 +208,21 @@ export default function DeviceTester() {
       </div>
       <dialog className="spam-dialog" ref={warn} aria-labelledby="spamTitle" onClick={(e) => e.target === e.currentTarget && warn.current?.close()}>
         <p className="spam-tag">⚠ Spam detected</p>
-        <h3 id="spamTitle">Whoa, slow down!</h3>
+        <h3 id="spamTitle">Caught you!</h3>
         <p>
           You hit Render <b>{spamCount} times</b> in a few seconds. Every click reloads all the phone screens, and that makes this page lag.
         </p>
-        <p className="spam-sent">Your IP, lat long and cookie had been sent to Daro.</p>
-        <p>Dororo has locked the button to cool things down.</p>
+        <div className="spam-term" aria-live="polite">
+          {TRACE.slice(0, trace).map((l) => (
+            <div key={l}>{l}</div>
+          ))}
+          {trace > TRACE.length ? (
+            <div className="spam-sent">✔ Your IP, location and cookies have been sent to Daro.</div>
+          ) : (
+            <span className="spam-cursor" />
+          )}
+        </div>
+        <p>Daro now knows it was you. Click again and Dororo will report you twice.</p>
         <p className="spam-timer">{cooldown ? `Try again in ${cooldown}s` : "You can render again now."}</p>
         <button className="btn btn-gold" type="button" autoFocus onClick={() => warn.current?.close()}>
           OK, I'll wait
