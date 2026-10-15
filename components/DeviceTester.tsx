@@ -19,7 +19,6 @@ const TRACE = [
   "> Tracing IP address ..... FOUND",
   "> Locating lat, long ..... FOUND",
   "> Copying cookies ........ DONE",
-  "> Sending report to Daro . 100%",
 ];
 
 // Turn "example.com" into "https://example.com/". Only http(s) links are allowed.
@@ -53,6 +52,8 @@ export default function DeviceTester() {
   const [spamCount, setSpamCount] = useState(0);
   const warn = useRef<HTMLDialogElement>(null);
   const [trace, setTrace] = useState(0);
+  const [sent, setSent] = useState(0);
+  const okClose = useRef(false);
 
   // Type the trace lines one at a time after the warning opens.
   useEffect(() => {
@@ -60,6 +61,13 @@ export default function DeviceTester() {
     const t = setTimeout(() => setTrace((n) => n + 1), 550);
     return () => clearTimeout(t);
   }, [trace]);
+
+  // Then count the fake "sending report" progress from 1 to 100 %.
+  useEffect(() => {
+    if (trace <= TRACE.length || sent >= 100) return;
+    const t = setTimeout(() => setSent((n) => Math.min(100, n + 1 + Math.floor(Math.random() * 3))), 30);
+    return () => clearTimeout(t);
+  }, [trace, sent]);
 
   // Count the cooldown down once a second; the Render button stays locked until it hits 0.
   useEffect(() => {
@@ -97,6 +105,7 @@ export default function DeviceTester() {
       if (!cooldown) setCooldown(COOLDOWN);
       if (!warn.current?.open) {
         setTrace(1);
+        setSent(0);
         warn.current?.showModal();
       }
       return;
@@ -206,7 +215,18 @@ export default function DeviceTester() {
           </div>
         ))}
       </div>
-      <dialog className="spam-dialog" ref={warn} aria-labelledby="spamTitle" onClick={(e) => e.target === e.currentTarget && warn.current?.close()}>
+      {/* Only the OK button closes it: no outside click, and Escape is blocked. */}
+      <dialog
+        className="spam-dialog"
+        ref={warn}
+        aria-labelledby="spamTitle"
+        onCancel={(e) => e.preventDefault()}
+        onClose={() => {
+          // Chrome lets a repeated Escape close it anyway, so reopen unless OK was pressed.
+          if (okClose.current) okClose.current = false;
+          else warn.current?.showModal();
+        }}
+      >
         <p className="spam-tag">⚠ Spam detected</p>
         <h3 id="spamTitle">Caught you!</h3>
         <p>
@@ -216,15 +236,28 @@ export default function DeviceTester() {
           {TRACE.slice(0, trace).map((l) => (
             <div key={l}>{l}</div>
           ))}
-          {trace > TRACE.length ? (
+          {trace > TRACE.length && (
+            <div>
+              {"> Sending report to Daro "}
+              {String(Math.max(1, sent)).padStart(3)}%
+              <span className="spam-bar">
+                <i style={{ transform: `scaleX(${sent / 100})` }} />
+              </span>
+            </div>
+          )}
+          {sent >= 100 ? (
             <div className="spam-sent">✔ Your IP, location and cookies have been sent to Daro.</div>
           ) : (
             <span className="spam-cursor" />
           )}
         </div>
-        <p>Daro now knows it was you. Click again and Dororo will report you twice.</p>
         <p className="spam-timer">{cooldown ? `Try again in ${cooldown}s` : "You can render again now."}</p>
-        <button className="btn btn-gold" type="button" autoFocus onClick={() => warn.current?.close()}>
+        <button className="btn btn-gold" type="button" autoFocus
+          onClick={() => {
+            okClose.current = true;
+            warn.current?.close();
+          }}
+        >
           OK, I'll wait
         </button>
       </dialog>
