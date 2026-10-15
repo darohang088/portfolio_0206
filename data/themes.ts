@@ -3,12 +3,13 @@
 // src (the full background) and thumb (a small preview for the menu).
 export type HeroTheme =
   | { id: string; name: string; thumb: string; kind: "scene"; scene: "riverside" }
-  | { id: string; name: string; thumb: string; kind: "desk"; src: string }
+  | { id: string; name: string; thumb: string; kind: "desk" | "room"; src: string }
   | { id: string; name: string; thumb: string; kind: "image"; src: string };
 
 export const heroThemes: HeroTheme[] = [
   { id: "riverside", name: "Phnom Penh Riverside", thumb: "/themes/riverside-thumb.webp", kind: "scene", scene: "riverside" },
   { id: "desk", name: "Daro at the Desk", thumb: "/themes/desk-thumb.webp", kind: "desk", src: "/themes/desk.webp" },
+  { id: "room", name: "Game Room", thumb: "/themes/room-thumb.webp", kind: "room", src: "/themes/room.webp" },
 ];
 
 export const DEFAULT_HERO_THEME = heroThemes[0];
