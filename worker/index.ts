@@ -37,20 +37,7 @@ export function replyTo(contact: string): Reply | null {
 // Telegram HTML needs <, > and & escaped in anything the visitor typed.
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-// "Home", "Tos page", "Merchant page"… instead of a long URL.
-export function pageName(referer: string | null): string {
-  if (!referer) return "Unknown page";
-  try {
-    const path = new URL(referer).pathname.replace(/\/$/, "");
-    const app = /^\/apps\/([a-z0-9-]+)$/.exec(path);
-    if (app) return `${app[1].charAt(0).toUpperCase()}${app[1].slice(1)} page`;
-    return path === "" ? "Home" : path;
-  } catch {
-    return "Unknown page";
-  }
-}
-
-export function formatMessage(name: string, reply: Reply, message: string, page: string, now = new Date()) {
+export function formatMessage(name: string, reply: Reply, message: string, now = new Date()) {
   const when = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Phnom_Penh",
     day: "numeric",
@@ -71,7 +58,7 @@ export function formatMessage(name: string, reply: Reply, message: string, page:
     "",
     `<blockquote>${esc(message)}</blockquote>`,
     "",
-    `🕒 ${when} · ${esc(page)}`,
+    `🕒 ${when}`,
   ].join("\n");
   const reply_markup =
     reply.kind === "telegram"
@@ -103,7 +90,7 @@ export async function handleMessage(request: Request, env: Env, send: typeof fet
     return json({ ok: false, error: "Please add your name, an email or Telegram username, and a message." }, 400);
   }
 
-  const { text, reply_markup } = formatMessage(name, reply, message, pageName(request.headers.get("referer")));
+  const { text, reply_markup } = formatMessage(name, reply, message);
 
   const res = await send(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: "POST",
