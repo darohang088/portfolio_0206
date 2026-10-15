@@ -4,8 +4,12 @@ import { useEffect, useRef, useState } from "react";
 
 const W = 393;
 const H = 852;
-const BEZEL = 12;
-const BORDER = 3;
+const FRAME = 2 * (12 + 3); // bezel + border on each side
+const OUTER_W = W + FRAME;
+const OUTER_H = H + FRAME;
+const GAP = 20;
+const MAX_PER_ROW = 4;
+const MAX_SCREENS = 12;
 
 // Turn "example.com" into "https://example.com/". Only http(s) links are allowed.
 export function normalizeUrl(input: string): string | null {
@@ -20,33 +24,38 @@ export function normalizeUrl(input: string): string | null {
   }
 }
 
-// Type a URL, press Render, and see the site inside a 393 × 852 phone frame.
+const clampScreens = (n: number) => Math.min(MAX_SCREENS, Math.max(1, Math.round(n) || 1));
+
+// Type a URL and how many screens, press Render, and see the site in that many
+// 393 × 852 phone frames, at most 4 per row.
 export default function DeviceTester() {
   const [input, setInput] = useState("");
+  const [countInput, setCountInput] = useState("1");
   const [url, setUrl] = useState<string | null>(null);
+  const [count, setCount] = useState(1);
   const [error, setError] = useState("");
   const [reloads, setReloads] = useState(0);
-  const [scale, setScale] = useState(1);
-  const fit = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  const grid = useRef<HTMLDivElement>(null);
 
-  // Shrink the frame on screens narrower than the phone.
   useEffect(() => {
-    const el = fit.current;
+    const el = grid.current;
     if (!el) return;
-    const ro = new ResizeObserver(([e]) => setScale(Math.min(1, e.contentRect.width / (W + 2 * (BEZEL + BORDER)))));
+    const ro = new ResizeObserver(([e]) => setWidth(e.contentRect.width));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
-  // Open with ?url=… already rendered, so a test can be shared as a link.
+  // Open with ?url=…&screens=… already rendered, so a test can be shared as a link.
   useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get("url");
-    if (!q) return;
-    const n = normalizeUrl(q);
-    if (n) {
-      setInput(q);
-      setUrl(n);
-    }
+    const params = new URLSearchParams(window.location.search);
+    const n = normalizeUrl(params.get("url") ?? "");
+    const c = clampScreens(Number(params.get("screens") ?? 1));
+    if (!n) return;
+    setInput(params.get("url") ?? "");
+    setCountInput(String(c));
+    setUrl(n);
+    setCount(c);
   }, []);
 
   const render = (e: React.FormEvent) => {
@@ -56,15 +65,23 @@ export default function DeviceTester() {
       setError("Enter a web address, like example.com or https://example.com");
       return;
     }
+    const c = clampScreens(Number(countInput));
     setError("");
+    setCountInput(String(c));
     setUrl(n);
+    setCount(c);
     setReloads((r) => r + 1);
     const q = new URL(window.location.href);
     q.searchParams.set("url", n);
+    q.searchParams.set("screens", String(c));
     window.history.replaceState(null, "", q);
   };
 
-  const outerH = H + 2 * (BEZEL + BORDER);
+  // Columns: up to 4, fewer on narrow screens so phones stay readable.
+  const fitCols = width ? Math.max(1, Math.floor((width + GAP) / (OUTER_W * 0.42 + GAP))) : 1;
+  const cols = Math.min(url ? count : 1, MAX_PER_ROW, fitCols);
+  const scale = width ? Math.min(1, (width - GAP * (cols - 1)) / (cols * OUTER_W)) : 1;
+  const screens = url ? count : 1;
 
   return (
     <div className="tester">
@@ -74,6 +91,7 @@ export default function DeviceTester() {
         </label>
         <input
           id="testUrl"
+          className="tester-url"
           type="url"
           inputMode="url"
           placeholder="https://example.com"
@@ -84,6 +102,18 @@ export default function DeviceTester() {
           aria-describedby="testErr"
           onChange={(e) => setInput(e.target.value)}
         />
+        <label className="tester-count">
+          <span>Screens</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={MAX_SCREENS}
+            value={countInput}
+            onChange={(e) => setCountInput(e.target.value)}
+            onBlur={() => setCountInput(String(clampScreens(Number(countInput))))}
+          />
+        </label>
         <button className="btn btn-gold" type="submit">
           Render ▶
         </button>
@@ -96,10 +126,11 @@ export default function DeviceTester() {
         <span className="tester-size">
           {W} × {H}
         </span>
+        <span className="tester-hint">Up to {MAX_PER_ROW} per row · max {MAX_SCREENS}</span>
         {url && (
           <>
             <button className="mini-tool" type="button" onClick={() => setReloads((r) => r + 1)}>
-              ↻ Reload
+              ↻ Reload all
             </button>
             <a className="mini-tool" href={url} target="_blank" rel="noopener noreferrer">
               Open in new tab ↗
@@ -108,28 +139,31 @@ export default function DeviceTester() {
         )}
       </div>
 
-      <div className="device-fit" ref={fit} style={{ height: outerH * scale }}>
-        <div
-          className="device"
-          style={{ width: W, height: H, transform: `scale(${scale})`, marginInline: `${(-(W + 2 * (BEZEL + BORDER)) * (1 - scale)) / 2}px` }}
-        >
-          {url ? (
-            <iframe
-              key={`${url}#${reloads}`}
-              src={url}
-              title={`Preview of ${url}`}
-              width={W}
-              height={H}
-              referrerPolicy="no-referrer"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-            />
-          ) : (
-            <div className="device-empty">
-              <b>Ready</b>
-              <span>Type a website address above and press Render.</span>
+      <div className="device-grid" ref={grid} style={{ gridTemplateColumns: `repeat(${cols}, ${OUTER_W * scale}px)`, gap: GAP }}>
+        {Array.from({ length: screens }, (_, i) => (
+          <div className="device-cell" key={i} style={{ width: OUTER_W * scale, height: OUTER_H * scale + 28 }}>
+            {url && screens > 1 && <span className="device-num">#{i + 1}</span>}
+            <div className="device" style={{ width: W, height: H, transform: `scale(${scale})` }}>
+              {url ? (
+                <iframe
+                  key={`${url}#${reloads}`}
+                  src={url}
+                  title={`Preview ${i + 1} of ${url}`}
+                  width={W}
+                  height={H}
+                  loading={i < 4 ? "eager" : "lazy"}
+                  referrerPolicy="no-referrer"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                />
+              ) : (
+                <div className="device-empty">
+                  <b>Ready</b>
+                  <span>Type a website address above and press Render.</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        ))}
       </div>
       <p className="tester-note">
         Some websites block being shown inside other pages, so they stay blank here. Use <b>Open in new tab</b> for those.
