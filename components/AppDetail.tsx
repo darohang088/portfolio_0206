@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ScreenGallery from "./ScreenGallery";
 import type { AppItem } from "@/data/profile";
 
 export default function AppDetail({ app }: { app: AppItem }) {
@@ -17,10 +18,17 @@ export default function AppDetail({ app }: { app: AppItem }) {
             <div className="app-hero-text">
               <p className="eyebrow">My App</p>
               <h1 className="app-title">{app.name}</h1>
+              {app.localName && (
+                <p className="app-local">
+                  <span lang="km">{app.localName}</span>
+                  {app.meaning && <span> · “{app.meaning}”</span>}
+                </p>
+              )}
               <p className="app-hero-tagline">{app.tagline}</p>
               <span className="chip soon">{app.status}</span>
             </div>
           </div>
+
           <div className="app-info">
             <div className="app-about">
               <h2>About {app.name}</h2>
@@ -48,6 +56,27 @@ export default function AppDetail({ app }: { app: AppItem }) {
               ))}
             </dl>
           </div>
+
+          {app.screens.length > 0 && (
+            <div className="app-block">
+              <h2>Screens</h2>
+              <ScreenGallery screens={app.screens} />
+            </div>
+          )}
+
+          {app.features.length > 0 && (
+            <div className="app-block">
+              <h2>What you can do</h2>
+              <div className="features">
+                {app.features.map((f) => (
+                  <div className="feature" key={f.title}>
+                    <h3>{f.title}</h3>
+                    <p>{f.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </main>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Pixelify_Sans, Silkscreen } from "next/font/google";
+import { Noto_Sans_Khmer, Pixelify_Sans, Silkscreen } from "next/font/google";
 import { profile } from "@/data/profile";
 import "./globals.css";
 
@@ -14,6 +14,13 @@ const pixelify = Pixelify_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-pixelify",
+  display: "swap",
+});
+
+const khmer = Noto_Sans_Khmer({
+  subsets: ["khmer"],
+  weight: ["400", "700"],
+  variable: "--font-khmer",
   display: "swap",
 });
 
@@ -32,7 +39,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${silkscreen.variable} ${pixelify.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${silkscreen.variable} ${pixelify.variable} ${khmer.variable}`} suppressHydrationWarning>
       <head>
         {/* Apply the saved theme before the page paints, so it never flashes. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />

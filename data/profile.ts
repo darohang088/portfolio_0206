@@ -242,15 +242,22 @@ export const posts: Post[] = [
 
 // Apps shown under "My App". Each one gets a card and its own page at /apps/<slug>.
 export type AppFact = { label: string; value: string };
+export type AppFeature = { title: string; text: string };
+export type AppScreen = { src: string; full: string; alt: string };
 export type AppItem = {
   slug: string;
   name: string;
+  localName?: string;
+  meaning?: string;
   tagline: string;
+  cardText: string;
   description: string[];
   image: string;
   cardImage: string;
   status: string;
   facts: AppFact[];
+  features: AppFeature[];
+  screens: AppScreen[];
   links?: { label: string; url: string }[];
 };
 
@@ -258,17 +265,45 @@ export const apps: AppItem[] = [
   {
     slug: "tos",
     name: "Tos",
-    tagline: "A cheerful blue buddy that waves hello every time you open the app.",
+    localName: "តោះ",
+    meaning: "Let's go!",
+    tagline: "Find your squad tonight. A social activity app for Cambodian Gen Z.",
+    cardText: "Find people to play futsal, grab coffee, game or travel with tonight.",
     description: [
-      "Tos is my own app. Its star is Tos himself, a round blue character with big eyes and bright green shoes who greets you with a wave.",
-      "I'm designing and building it myself, from the first sketch of the character to the release. Screenshots, features and download links will be added here as the app takes shape.",
+      "Tos (តោះ, “Let's go!”) is a social activity app for Cambodian Gen Z. It helps you find people to play futsal, grab coffee, game or travel with tonight.",
+      "You join in one tap, chat with your squad, and pay your share with KHQR. Tos holds the money safely until the activity really happens.",
+      "It's a mobile app for Android and iOS, built with Flutter from one codebase. It's in design and pre-launch now, and coming soon in Phnom Penh.",
     ],
     image: "/apps/tos.webp",
     cardImage: "/apps/tos-card.webp",
-    status: "In development",
+    status: "Coming soon",
     facts: [
-      { label: "Status", value: "In development" },
+      { label: "Status", value: "Design & pre-launch" },
+      { label: "Launch", value: "Phnom Penh, coming soon" },
+      { label: "Platforms", value: "Android & iOS" },
+      { label: "Built with", value: "Flutter" },
+      { label: "Payments", value: "KHQR" },
+      { label: "Languages", value: "Khmer & English" },
       { label: "Made by", value: "Hang Daro" },
+    ],
+    features: [
+      { title: "Who's down tonight", text: "See which friends are free and join their plans." },
+      { title: "Nearby activities", text: "A feed and live map of futsal, badminton, coffee, MLBB and trips near you." },
+      { title: "Join in one tap", text: "Tap “Tos!” to join open plans instantly, or send a request for small groups and trips that the host approves." },
+      { title: "KHQR payments with escrow", text: "Pay your share with KHQR. Tos holds the money until the host checks in, with a full automatic refund if the host doesn't show." },
+      { title: "Squad chat", text: "A group chat for every activity, with a message guard against harmful messages." },
+      { title: "Check-ins and reliability", text: "GPS check-in for players and hosts, plus a reliability score that rewards people who show up." },
+      { title: "Safety tools", text: "Verified profiles, women-only plans, share-my-plan, a safety timer and SOS." },
+      { title: "Hosting tools", text: "Create a plan in 4 steps, with waitlists, earnings and payouts, and Host Pro for clubs." },
+      { title: "Fun extras", text: "Streaks, XP, crews, leaderboards and shareable recap stories." },
+      { title: "Khmer and English", text: "Use the app in either language, with prices in riel or dollars." },
+    ],
+    screens: [
+      { src: "/apps/tos-screen-1.webp", full: "/apps/tos-screen-1-full.webp", alt: "Find your squad tonight: home feed of what's happening in Phnom Penh" },
+      { src: "/apps/tos-screen-2.webp", full: "/apps/tos-screen-2-full.webp", alt: "Join in one tap: activity detail with spots, price and bring-a-friend" },
+      { src: "/apps/tos-screen-3.webp", full: "/apps/tos-screen-3-full.webp", alt: "Pay safely with KHQR: payment screen with escrow and full refund on host no-show" },
+      { src: "/apps/tos-screen-4.webp", full: "/apps/tos-screen-4-full.webp", alt: "See who's free tonight: friends who are down and the weekly leaderboard" },
+      { src: "/apps/tos-screen-5.webp", full: "/apps/tos-screen-5-full.webp", alt: "Stay safe at every meetup: safety centre with verification, check-in timer and SOS" },
     ],
   },
 ];

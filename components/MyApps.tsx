@@ -21,7 +21,7 @@ export default function MyApps() {
                   <span className="app-name">{a.name}</span>
                   <span className="chip soon">{a.status}</span>
                 </span>
-                <span className="app-tagline">{a.tagline}</span>
+                <span className="app-tagline">{a.cardText}</span>
                 <span className="read">View app ▶</span>
               </span>
             </Link>
