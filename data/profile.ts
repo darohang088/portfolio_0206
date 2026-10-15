@@ -254,7 +254,7 @@ export type AppItem = {
   description: string[];
   image: string;
   cardImage: string;
-  status: string;
+  status?: string;
   facts: AppFact[];
   features: AppFeature[];
   screens: AppScreen[];
@@ -262,6 +262,21 @@ export type AppItem = {
 };
 
 export const apps: AppItem[] = [
+  {
+    slug: "merchant",
+    name: "Merchant",
+    tagline: "An app for shop owners, built around sales and growing the business.",
+    cardText: "An app for shop owners, built around sales and growing the business.",
+    description: [
+      "Merchant is an app for shop owners, built around sales and growing the business.",
+      "More details, screenshots and features will be added here soon.",
+    ],
+    image: "/apps/merchant.webp",
+    cardImage: "/apps/merchant-card.webp",
+    facts: [{ label: "Made by", value: "Hang Daro" }],
+    features: [],
+    screens: [],
+  },
   {
     slug: "tos",
     name: "Tos",

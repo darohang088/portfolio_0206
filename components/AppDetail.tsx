@@ -17,7 +17,9 @@ export default function AppDetail({ app }: { app: AppItem }) {
             </div>
             <div className="app-hero-text">
               <p className="eyebrow">My App</p>
-              <h1 className="app-title">{app.name}</h1>
+              <h1 className="app-title" style={{ "--len": app.name.length } as React.CSSProperties}>
+                {app.name}
+              </h1>
               {app.localName && (
                 <p className="app-local">
                   <span lang="km">{app.localName}</span>
@@ -25,7 +27,7 @@ export default function AppDetail({ app }: { app: AppItem }) {
                 </p>
               )}
               <p className="app-hero-tagline">{app.tagline}</p>
-              <span className="chip soon">{app.status}</span>
+              {app.status && <span className="chip soon">{app.status}</span>}
             </div>
           </div>
 

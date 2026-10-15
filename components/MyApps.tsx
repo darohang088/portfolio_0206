@@ -19,7 +19,7 @@ export default function MyApps() {
               <span className="app-body">
                 <span className="app-top">
                   <span className="app-name">{a.name}</span>
-                  <span className="chip soon">{a.status}</span>
+                  {a.status && <span className="chip soon">{a.status}</span>}
                 </span>
                 <span className="app-tagline">{a.cardText}</span>
                 <span className="read">View app ▶</span>
