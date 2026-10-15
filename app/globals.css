@@ -85,7 +85,7 @@ a{color:inherit}
   animation:drop .8s cubic-bezier(.3,1.7,.5,1) both,shine 5s linear infinite;animation-delay:calc(var(--i)*80ms),calc(1.4s + var(--i)*70ms)}
 @keyframes drop{from{transform:translateY(-90px);opacity:0}60%{opacity:1}to{transform:none;opacity:1}}
 @keyframes shine{0%{background-position:100% 0,0 0}35%,100%{background-position:0% 0,0 0}}
-.tagline{margin:6px 0 0;font-size:clamp(18px,2.4vw,26px);font-weight:700;color:#fff;text-shadow:0 2px 0 rgba(10,20,40,.55),0 0 18px rgba(10,30,30,.35);min-height:1.6em}
+.tagline{margin:6px 0 0;font-size:clamp(18px,2.4vw,26px);font-weight:700;color:#fff;text-shadow:0 2px 0 rgba(10,20,50,.85),2px 0 0 rgba(10,20,50,.6),-2px 0 0 rgba(10,20,50,.6),0 0 14px rgba(10,20,60,.75);min-height:1.6em}
 .caret{display:inline-block;width:.5em;height:1em;margin-left:4px;vertical-align:-.12em;background:var(--gold);animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 .cta-row{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-top:18px}

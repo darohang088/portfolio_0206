@@ -1,4 +1,4 @@
-import MeadowScene from "./MeadowScene";
+import HeroScene from "./HeroScene";
 import Mascot from "./Mascot";
 import TypedRoles from "./TypedRoles";
 import { profile } from "@/data/profile";
@@ -18,7 +18,7 @@ function GoldWord({ word, start }: { word: string; start: number }) {
 export default function Hero() {
   return (
     <section className="hero" id="top">
-      <MeadowScene />
+      <HeroScene />
       <div className="wrap hero-inner">
         <p className="eyebrow-hero">{profile.level}</p>
         <h1 className="title" aria-label={profile.name}>

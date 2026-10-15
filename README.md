@@ -18,7 +18,7 @@ app/
 components/
   Nav.tsx          Sticky menu with the scroll XP bar
   Hero.tsx         Title, typing roles and buttons
-  MeadowScene.tsx  Animated pixel landscape (canvas)
+  HeroScene.tsx    Animated Phnom Penh riverside (drawing code in lib/scene.ts)
   Mascot.tsx       Droidy, the clickable pixel phone
   About.tsx        Summary and counters
   QuestLog.tsx     Work experience timeline
