@@ -9,12 +9,15 @@ import { profile } from "@/data/profile";
 const LINKS = [
   { href: "#quests", label: "Quests" },
   { href: "#trophies", label: "Trophies" },
+  { href: "#apps", label: "My App" },
   { href: "#inventory", label: "Inventory" },
   { href: "#blogs", label: "Blogs" },
   { href: "#contact", label: "Contact" },
 ];
 
-export default function Nav() {
+// On other pages (like an app's detail page) the links point back to sections of the home page.
+export default function Nav({ home = true }: { home?: boolean }) {
+  const base = home ? "" : "/";
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -31,14 +34,14 @@ export default function Nav() {
   return (
     <header className={`nav${open ? " open" : ""}`}>
       <div className="wrap nav-row">
-        <a className="brand" href="#top" aria-label={`${profile.name}, back to top`}>
+        <a className="brand" href={`${base}#top`} aria-label={`${profile.name}, back to top`}>
           <PixelSprite rows={COIN} palette={COIN_PAL} />
           {profile.name}
         </a>
         <ul className="links" id="links">
           {LINKS.map((l) => (
             <li key={l.href}>
-              <a href={l.href} onClick={() => setOpen(false)}>
+              <a href={`${base}${l.href}`} onClick={() => setOpen(false)}>
                 {l.label}
               </a>
             </li>

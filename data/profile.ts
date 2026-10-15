@@ -239,3 +239,36 @@ export const posts: Post[] = [
     tag: "Flutter",
   },
 ];
+
+// Apps shown under "My App". Each one gets a card and its own page at /apps/<slug>.
+export type AppFact = { label: string; value: string };
+export type AppItem = {
+  slug: string;
+  name: string;
+  tagline: string;
+  description: string[];
+  image: string;
+  cardImage: string;
+  status: string;
+  facts: AppFact[];
+  links?: { label: string; url: string }[];
+};
+
+export const apps: AppItem[] = [
+  {
+    slug: "tos",
+    name: "Tos",
+    tagline: "A cheerful blue buddy that waves hello every time you open the app.",
+    description: [
+      "Tos is my own app. Its star is Tos himself, a round blue character with big eyes and bright green shoes who greets you with a wave.",
+      "I'm designing and building it myself, from the first sketch of the character to the release. Screenshots, features and download links will be added here as the app takes shape.",
+    ],
+    image: "/apps/tos.webp",
+    cardImage: "/apps/tos-card.webp",
+    status: "In development",
+    facts: [
+      { label: "Status", value: "In development" },
+      { label: "Made by", value: "Hang Daro" },
+    ],
+  },
+];

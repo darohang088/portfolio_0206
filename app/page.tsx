@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import About from "@/components/About";
 import QuestLog from "@/components/QuestLog";
 import Trophies from "@/components/Trophies";
+import MyApps from "@/components/MyApps";
 import Inventory from "@/components/Inventory";
 import SavePoints from "@/components/SavePoints";
 import Blogs from "@/components/Blogs";
@@ -20,6 +21,7 @@ export default function Home() {
         <About />
         <QuestLog />
         <Trophies />
+        <MyApps />
         <Inventory />
         <SavePoints />
         <Blogs />
