@@ -263,7 +263,7 @@ export const education: SavePoint[] = [
 ];
 
 export const mascotQuotes = [
-  "Hi! I'm Droidy, Daro's sidekick.",
+  "Hi! I'm Dororo, Daro's sidekick.",
   "Daro has shipped Android apps since 2019.",
   "100k+ people use an app Daro built from scratch!",
   "Daro speaks Flutter and native Android.",

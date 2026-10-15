@@ -70,7 +70,7 @@ export default function ChatWidget() {
     setTimeout(() => nameInput.current?.focus(), 320);
     if (greeted.current) return;
     greeted.current = true;
-    await botSay("Hi! I'm Droidy, Daro's sidekick.", 500);
+    await botSay("Hi! I'm Dororo, Daro's sidekick.", 500);
     await botSay("Leave your name, how to reach you and a message. Daro gets it right away and replies to you directly.");
     setShowChips(true);
   };
@@ -182,7 +182,7 @@ export default function ChatWidget() {
             <BlinkingPhone />
           </span>
           <div className="chat-who">
-            <b id="chatTitle">DROIDY</b>
+            <b id="chatTitle">DORORO</b>
             <span>Daro usually replies within a day</span>
           </div>
           <button className="chat-x" type="button" aria-label="Close messages" onClick={closeChat}>
@@ -197,7 +197,7 @@ export default function ChatWidget() {
             </div>
           ))}
           {typing && (
-            <div className="msg bot typing" aria-label="Droidy is typing">
+            <div className="msg bot typing" aria-label="Dororo is typing">
               <i />
               <i />
               <i />

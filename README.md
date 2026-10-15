@@ -19,7 +19,7 @@ components/
   Nav.tsx          Sticky menu with the scroll XP bar
   Hero.tsx         Title, typing roles and buttons
   HeroScene.tsx    Animated Phnom Penh riverside (drawing code in lib/scene.ts)
-  Mascot.tsx       Droidy, the clickable pixel phone
+  Mascot.tsx       Dororo, the clickable pixel phone
   About.tsx        Summary and counters
   QuestLog.tsx     Work experience timeline
   Trophies.tsx     Project cards (TrophyCard.tsx adds the 3D tilt)

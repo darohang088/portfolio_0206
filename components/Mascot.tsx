@@ -5,7 +5,7 @@ import BlinkingPhone from "./BlinkingPhone";
 import { mascotQuotes } from "@/data/profile";
 
 export default function Mascot() {
-  const [line, setLine] = useState("Hi! I'm Droidy. Tap me!");
+  const [line, setLine] = useState("Hi! I'm Dororo. Tap me!");
   const [show, setShow] = useState(false);
   const [happy, setHappy] = useState(false);
   const next = useRef(0);
@@ -19,7 +19,7 @@ export default function Mascot() {
   };
 
   useEffect(() => {
-    const t = setTimeout(() => say("Hi! I'm Droidy. Tap me!"), 1800);
+    const t = setTimeout(() => say("Hi! I'm Dororo. Tap me!"), 1800);
     return () => {
       clearTimeout(t);
       clearTimeout(hideTimer.current);
@@ -34,7 +34,7 @@ export default function Mascot() {
   };
 
   return (
-    <button className="mascot" aria-label="Say hi to Droidy, the pixel phone" onClick={onClick}>
+    <button className="mascot" aria-label="Say hi to Dororo, the pixel phone" onClick={onClick}>
       <BlinkingPhone happy={happy} />
       <span className={`bubble${show ? " show" : ""}`} role="status">
         {line}
