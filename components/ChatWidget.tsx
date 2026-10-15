@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import BlinkingPhone from "./BlinkingPhone";
 import PixelSprite from "./PixelSprite";
 import { BUBBLE, BUBBLE_PAL } from "@/lib/sprites";
-import { profile } from "@/data/profile";
+import { apps, profile } from "@/data/profile";
 
 type Msg = { id: number; who: "bot" | "me"; text: string };
 type Field = "name" | "email" | "message";
@@ -25,6 +25,7 @@ export default function ChatWidget() {
   const [typing, setTyping] = useState(false);
   const [showChips, setShowChips] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", message: "", company: "" });
+  const [interests, setInterests] = useState<string[]>([]);
   const [invalid, setInvalid] = useState<Field[]>([]);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
@@ -64,8 +65,14 @@ export default function ChatWidget() {
     );
   }, []);
 
+  const toggleInterest = (name: string) =>
+    setInterests((list) => (list.includes(name) ? list.filter((n) => n !== name) : [...list, name]));
+
   const openChat = async () => {
     setOpen(true);
+    // On an app's own page, start with that app ticked.
+    const here = apps.find((a) => window.location.pathname.replace(/\/$/, "") === `/apps/${a.slug}`);
+    if (here && !greeted.current) setInterests([here.name]);
     if (!startedAt.current) startedAt.current = Date.now();
     setTimeout(() => nameInput.current?.focus(), 320);
     if (greeted.current) return;
@@ -137,7 +144,7 @@ export default function ChatWidget() {
       const res = await fetch("/api/message", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...form, startedAt: startedAt.current }),
+        body: JSON.stringify({ ...form, interests, startedAt: startedAt.current }),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean };
       if (!res.ok || !data.ok) throw new Error("not sent");
@@ -222,6 +229,25 @@ export default function ChatWidget() {
           <div className="chat-row">
             <input ref={nameInput} id="chatName" type="text" placeholder="Your name" autoComplete="name" aria-label="Your name" maxLength={80} {...field("name")} />
             <input id="chatEmail" type="text" inputMode="email" placeholder="Email or Telegram @username" autoComplete="email" aria-label="Email or Telegram username, for Daro's reply" maxLength={120} {...field("email")} />
+          </div>
+          <div className="chat-interest" role="group" aria-labelledby="interestLabel">
+            <span className="chat-interest-label" id="interestLabel">
+              Interested in <small>(optional)</small>
+            </span>
+            <div className="interest-row">
+              {apps.map((a) => (
+                <button
+                  className="interest"
+                  type="button"
+                  key={a.slug}
+                  aria-pressed={interests.includes(a.name)}
+                  onClick={() => toggleInterest(a.name)}
+                >
+                  <img src={a.cardImage} alt="" width={32} height={32} />
+                  {a.name}
+                </button>
+              ))}
+            </div>
           </div>
           <textarea ref={msgInput} id="chatMsg" placeholder="Write your message…" aria-label="Message" maxLength={2000} {...field("message")} />
           {/* Hidden from people; bots fill it in and get ignored. */}

@@ -12,7 +12,7 @@ interface Env {
   TELEGRAM_CHAT_ID?: string;
 }
 
-type Payload = { name?: unknown; email?: unknown; message?: unknown; company?: unknown; startedAt?: unknown };
+type Payload = { name?: unknown; email?: unknown; message?: unknown; interests?: unknown; company?: unknown; startedAt?: unknown };
 
 const LIMITS = { name: 80, email: 120, message: 2000 };
 
@@ -37,7 +37,13 @@ export function replyTo(contact: string): Reply | null {
 // Telegram HTML needs <, > and & escaped in anything the visitor typed.
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-export function formatMessage(name: string, reply: Reply, message: string, now = new Date()) {
+// Up to 5 short app names the visitor ticked under "Interested in".
+export function cleanInterests(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return [...new Set(v.filter((x): x is string => typeof x === "string").map((x) => x.trim().slice(0, 40)).filter(Boolean))].slice(0, 5);
+}
+
+export function formatMessage(name: string, reply: Reply, message: string, interests: string[] = [], now = new Date()) {
   const when = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Phnom_Penh",
     day: "numeric",
@@ -55,6 +61,7 @@ export function formatMessage(name: string, reply: Reply, message: string, now =
     "",
     `👤 <b>${esc(name)}</b>`,
     contact,
+    ...(interests.length ? [`🏷️ <b>Interested in:</b> ${interests.map(esc).join(", ")}`] : []),
     "",
     `<blockquote>${esc(message)}</blockquote>`,
     "",
@@ -90,7 +97,7 @@ export async function handleMessage(request: Request, env: Env, send: typeof fet
     return json({ ok: false, error: "Please add your name, an email or Telegram username, and a message." }, 400);
   }
 
-  const { text, reply_markup } = formatMessage(name, reply, message);
+  const { text, reply_markup } = formatMessage(name, reply, message, cleanInterests(data.interests));
 
   const res = await send(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: "POST",
