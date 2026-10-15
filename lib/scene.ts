@@ -230,6 +230,12 @@ function boat(ctx: CanvasRenderingContext2D, b: Boat, y: number) {
   px(ctx, b.roof, x + 2, y - 4, 10, 1);
 }
 
+function sprite(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void) {
+  const c = offscreen(w, h);
+  draw(c.getContext("2d")!);
+  return c;
+}
+
 function onMQ(mq: MediaQueryList, fn: () => void) {
   if (mq.addEventListener) mq.addEventListener("change", fn);
   else mq.addListener(fn);
@@ -244,6 +250,10 @@ function pageBackground(): RGB {
 export function startScene(cvs: HTMLCanvasElement, host: HTMLElement): () => void {
   const ctx = cvs.getContext("2d");
   if (!ctx) return () => {};
+  let SC = 4;
+  // Draw a low-res image at a low-res position, snapped to whole screen pixels so motion stays smooth.
+  const blit = (img: CanvasImageSource & { width: number; height: number }, x: number, y: number) =>
+    ctx.drawImage(img, Math.round(x * SC), Math.round(y * SC), img.width * SC, img.height * SC);
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let W = 0, H = 0, HZ = 0, RB = 0, PW = 0;
@@ -252,17 +262,21 @@ export function startScene(cvs: HTMLCanvasElement, host: HTMLElement): () => voi
   let boats: Boat[] = [], birds: Bird[] = [], sparks: Spark[] = [], lotus: [number, number][] = [];
   let tuk = 0;
   let ready = false;
+  let river: HTMLCanvasElement, overlay: HTMLCanvasElement;
+  let rctx: CanvasRenderingContext2D, fctx: CanvasRenderingContext2D;
+  let boatImgs: HTMLCanvasElement[] = [], birdImgs: HTMLCanvasElement[] = [], tukImg: HTMLCanvasElement;
 
   const build = () => {
     const rect = host.getBoundingClientRect();
     if (rect.width < 2 || rect.height < 2) return;
-    const scale = rect.width < 560 ? 3 : rect.width < 1200 ? 4 : 5;
-    W = Math.ceil(rect.width / scale);
-    H = Math.ceil(rect.height / scale);
-    cvs.width = W;
-    cvs.height = H;
-    cvs.style.width = `${W * scale}px`;
-    cvs.style.height = `${H * scale}px`;
+    SC = rect.width < 560 ? 3 : rect.width < 1200 ? 4 : 5;
+    W = Math.ceil(rect.width / SC);
+    H = Math.ceil(rect.height / SC);
+    cvs.width = W * SC;
+    cvs.height = H * SC;
+    cvs.style.width = `${W * SC}px`;
+    cvs.style.height = `${H * SC}px`;
+    ctx.imageSmoothingEnabled = false;
 
     const R = rng(20240206);
     const LW = W + MARGIN * 2;
@@ -390,6 +404,22 @@ export function startScene(cvs: HTMLCanvasElement, host: HTMLElement): () => voi
     sparks = Array.from({ length: Math.round(W / 6) }, () => ({ x: (R() * W) | 0, y: HZ + 1 + ((R() * (rh - 2)) | 0), len: 1 + ((R() * 3) | 0), ph: R() * 6 }));
     lotus = Array.from({ length: Math.max(3, Math.round(W / 70)) }, () => [(R() * W) | 0, RB - 1 - ((R() * 2) | 0)]);
     tuk = R() * W;
+
+    river = offscreen(W, rh);
+    rctx = river.getContext("2d")!;
+    overlay = offscreen(W, H);
+    fctx = overlay.getContext("2d")!;
+    const rail = offscreen(W, 2);
+    const rg = rail.getContext("2d")!;
+    px(rg, "#6b5a48", 0, 0, W, 1);
+    for (let x = 0; x < W; x += 4) px(rg, "#6b5a48", x, 0, 1, 2);
+    L.rail = rail;
+    boatImgs = boats.map((b) => sprite(18, 6, (g) => boat(g, { ...b, x: 3 }, 4)));
+    birdImgs = [
+      [[-2, -1], [-1, 0], [0, 0], [1, 0], [2, -1]],
+      [[-2, 1], [-1, 0], [0, 0], [1, 0], [2, 1]],
+    ].map((pts) => sprite(5, 3, (g) => pts.forEach(([dx, dy]) => px(g, "#2a3566", 2 + dx, 1 + dy))));
+    tukImg = sprite(17, 11, (g) => tuktuk(g, 1, 10, 0));
     ready = true;
   };
 
@@ -401,76 +431,75 @@ export function startScene(cvs: HTMLCanvasElement, host: HTMLElement): () => voi
     const t = (now - t0) / 1000;
     const dt = Math.min(0.1, (now - last) / 1000 || 0);
     last = now;
-    mx += (tmx - mx) * 0.08;
+    mx += (tmx - mx) * Math.min(1, dt * 5);
 
-    ctx.drawImage(L.sky, 0, 0);
+    blit(L.sky, 0, 0);
     for (const c of clouds) {
       c.x += c.v * dt;
       if (c.x > W + MARGIN) c.x = -c.img.width - MARGIN;
-      ctx.drawImage(c.img, Math.round(c.x - mx * c.k), c.y);
+      blit(c.img, c.x - mx * c.k, c.y);
     }
     for (const b of birds) {
       b.x += b.v * dt;
       if (b.x > W + 6) b.x = -6;
-      const x = Math.round(b.x - mx * 2), y = b.y + Math.round(Math.sin(t + b.ph) * 1.5);
-      const up = ((t * 5 + b.ph) | 0) % 2 === 0;
-      for (const [dx, dy] of up ? [[-2, -1], [-1, 0], [0, 0], [1, 0], [2, -1]] : [[-2, 1], [-1, 0], [0, 0], [1, 0], [2, 1]])
-        px(ctx, "#2a3566", x + dx, y + dy);
+      blit(birdImgs[((t * 5 + b.ph) | 0) % 2], b.x - mx * 2 - 2, b.y + Math.sin(t + b.ph) * 1.5 - 1);
     }
-    ctx.drawImage(L.far, Math.round(-MARGIN - mx * 2), 0);
-    ctx.drawImage(L.city, Math.round(-MARGIN - mx * 4), 0);
-    ctx.drawImage(L.front, Math.round(-MARGIN - mx * 6), 0);
+    blit(L.far, -MARGIN - mx * 2, 0);
+    blit(L.city, -MARGIN - mx * 4, 0);
+    blit(L.front, -MARGIN - mx * 6, 0);
 
-    // River: water, rippling reflection, sparkles, boats and lotus
+    // River (low-res): water, rippling reflection, sparkles and lotus
     const rh = RB - HZ;
-    ctx.drawImage(L.water, 0, HZ);
+    rctx.drawImage(L.water, 0, 0);
     for (let r = 0; r < rh; r++) {
       const sy = HZ - 1 - Math.floor(r * 1.4);
       if (sy < 0) break;
       const wob = Math.round(Math.sin(t * 2.2 + r * 0.8) * (0.5 + r / rh));
-      ctx.globalAlpha = 0.32 * (1 - r / rh) + 0.06;
-      ctx.drawImage(L.comp, MARGIN + mx * 4, sy, W, 1, wob, HZ + r, W, 1);
+      rctx.globalAlpha = 0.32 * (1 - r / rh) + 0.06;
+      rctx.drawImage(L.comp, Math.round(MARGIN + mx * 4), sy, W, 1, wob, r, W, 1);
     }
-    ctx.globalAlpha = 1;
-    for (const s of sparks) if (Math.sin(t * 3 + s.ph) > 0.55) px(ctx, "#e6f3fb", s.x, s.y, s.len, 1);
-    for (const b of boats) {
+    rctx.globalAlpha = 1;
+    for (const sp of sparks) if (Math.sin(t * 3 + sp.ph) > 0.55) px(rctx, "#e6f3fb", sp.x, sp.y - HZ, sp.len, 1);
+    for (const [x, y] of lotus) {
+      px(rctx, "#3d8b4f", x - 2, y - HZ, 5, 1);
+      px(rctx, "#f58fbf", x, y - HZ - 2, 1, 2);
+      px(rctx, "#e870b0", x - 1, y - HZ - 1, 3, 1);
+    }
+    blit(river, 0, HZ);
+    boats.forEach((b, i) => {
       b.x += b.v * dt;
       if (b.x > W + 20) b.x = -20;
       if (b.x < -20) b.x = W + 20;
-      boat(ctx, b, b.y + Math.round(Math.sin(t * 2 + b.ph) * 0.6));
-    }
-    for (const [x, y] of lotus) {
-      px(ctx, "#3d8b4f", x - 2, y, 5, 1);
-      px(ctx, "#2f7040", x - 1, y + 1, 3, 1);
-      px(ctx, "#f58fbf", x, y - 2, 1, 2);
-      px(ctx, "#e870b0", x - 1, y - 1, 3, 1);
-    }
+      blit(boatImgs[i], b.x - 3, b.y - 4 + Math.sin(t * 2 + b.ph) * 0.6);
+    });
 
-    ctx.drawImage(L.ground, 0, RB);
-    for (let x = 0; x < W; x += 4) px(ctx, "#6b5a48", x, RB - 2, 1, 2);
-    px(ctx, "#6b5a48", 0, RB - 2, W, 1);
+    blit(L.ground, 0, RB);
+    blit(L.rail, 0, RB - 2);
     tuk += 11 * dt;
     if (tuk > W + 20) tuk = -20;
-    tuktuk(ctx, Math.round(tuk), RB + 1, ((t * 6) | 0) % 3 === 0 ? 1 : 0);
+    blit(tukImg, tuk - 1, RB + 1 - 10 - Math.abs(Math.sin(t * 9)) * 0.7);
 
+    // Park and palms (low-res, transparent overlay)
+    fctx.clearRect(0, 0, W, H);
     const gust = Math.sin(t * 0.6) * 0.8;
     for (const f of flowers) {
       const sw = Math.round(Math.sin(t * 1.4 + f.ph) * f.d * 1.5 + gust * f.d);
-      px(ctx, "#3b7a3e", f.x, f.y - 2, 1, 2);
-      px(ctx, f.c, f.x + sw - 1, f.y - 3, 3, 1);
-      px(ctx, f.c, f.x + sw, f.y - 4, 1, 3);
+      px(fctx, "#3b7a3e", f.x, f.y - 2, 1, 2);
+      px(fctx, f.c, f.x + sw - 1, f.y - 3, 3, 1);
+      px(fctx, f.c, f.x + sw, f.y - 4, 1, 3);
     }
     let col = "";
     for (const b of blades) {
       if (b.c !== col) {
         col = b.c;
-        ctx.fillStyle = col;
+        fctx.fillStyle = col;
       }
       const s = Math.sin(t * 1.7 + b.x * 0.09 + b.ph) * b.d * 1.6 + gust * b.d * 1.4;
       const ox = Math.round(-mx * 10 * b.d);
-      for (let j = 0; j < b.len; j++) ctx.fillRect(b.x + ox + Math.round(s * (j / b.len)), b.y - j, 1, 1);
+      for (let j = 0; j < b.len; j++) fctx.fillRect(b.x + ox + Math.round(s * (j / b.len)), b.y - j, 1, 1);
     }
-    for (const p of palms) palm(ctx, p, t, Math.round(-mx * 12));
+    for (const p of palms) palm(fctx, p, t, Math.round(-mx * 12));
+    blit(overlay, 0, 0);
   };
 
   const draw = (now: number) => {
@@ -482,7 +511,7 @@ export function startScene(cvs: HTMLCanvasElement, host: HTMLElement): () => voi
   };
   const loop = (now: number) => {
     if (!running) return;
-    if (now - last >= 1000 / 30) draw(now);
+    draw(now);
     raf = requestAnimationFrame(loop);
   };
   const start = () => {

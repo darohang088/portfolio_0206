@@ -8,7 +8,8 @@ function GoldWord({ word, start }: { word: string; start: number }) {
     <span className="word" aria-hidden="true">
       {[...word].map((ch, i) => (
         <span key={i} className="ch" style={{ "--i": start + i } as React.CSSProperties}>
-          {ch}
+          <span className="ch-o">{ch}</span>
+          <span className="ch-f">{ch}</span>
         </span>
       ))}
     </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PixelSprite from "./PixelSprite";
 import ThemeToggle from "./ThemeToggle";
 import { COIN, COIN_PAL } from "@/lib/sprites";
@@ -19,16 +19,26 @@ const LINKS = [
 export default function Nav({ home = true }: { home?: boolean }) {
   const base = home ? "" : "/";
   const [open, setOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const bar = useRef<HTMLElement>(null);
 
+  // Update the XP bar once per frame on the compositor, without re-rendering the nav.
   useEffect(() => {
-    const onScroll = () => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
       const h = document.documentElement;
-      setProgress(Math.min(1, h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight)));
+      const p = Math.min(1, h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight));
+      if (bar.current) bar.current.style.transform = `scaleX(${p})`;
     };
-    onScroll();
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (
@@ -63,7 +73,7 @@ export default function Nav({ home = true }: { home?: boolean }) {
         </div>
       </div>
       <div className="xp" aria-hidden="true">
-        <i style={{ width: `${progress * 100}%` }} />
+        <i ref={bar} />
       </div>
     </header>
   );
