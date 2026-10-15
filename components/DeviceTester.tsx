@@ -194,6 +194,7 @@ export default function DeviceTester() {
         <p>
           You hit Render <b>{spamCount} times</b> in a few seconds. Every click reloads all the phone screens, and that makes this page lag.
         </p>
+        <p className="spam-sent">Your IP, lat long and cookie had been sent to Daro.</p>
         <p>Dororo has locked the button to cool things down.</p>
         <p className="spam-timer">{cooldown ? `Try again in ${cooldown}s` : "You can render again now."}</p>
         <button className="btn btn-gold" type="button" autoFocus onClick={() => warn.current?.close()}>
