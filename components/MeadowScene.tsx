@@ -33,10 +33,15 @@ const hex = (h: string): RGB => [
   parseInt(h.slice(5, 7), 16),
 ];
 const SKY = ["#2c58bf", "#3569cf", "#417fdb", "#5296e3", "#68aeea", "#83c6f0", "#a3dbf3", "#c4ebf5"].map(hex);
-const FIELD = [
-  "#7cbb67", "#6fae5f", "#62a157", "#56934f", "#4a8548", "#3f7741", "#34683b",
-  "#2a5835", "#21472f", "#193628", "#132722", "#0f1a24", "#0b0c22",
-].map(hex);
+const FIELD_GREENS = ["#7cbb67", "#6fae5f", "#62a157", "#56934f", "#4a8548", "#3f7741", "#34683b", "#2a5835", "#21472f"].map(hex);
+const mix = (a: RGB, b: RGB, t: number): RGB => [0, 1, 2].map((i) => Math.round(a[i] + (b[i] - a[i]) * t)) as RGB;
+const toHex = (c: RGB) => "#" + c.map((v) => v.toString(16).padStart(2, "0")).join("");
+
+// The field darkens from green into the page background, so the hero melts into the page in both themes.
+function pageBackground(): RGB {
+  const v = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  return /^#[0-9a-f]{6}$/i.test(v) ? hex(v) : hex("#0b0c22");
+}
 const BLADE = ["#9bd67a", "#86c76c", "#71b660", "#5da255", "#4a8b4a", "#36713f", "#255635", "#173b2b"];
 const MARGIN = 28;
 
@@ -181,6 +186,13 @@ export default function MeadowScene() {
       cvs.style.height = `${H * px}px`;
 
       const R = rng(20240206);
+      const bg = pageBackground();
+      const last = FIELD_GREENS[FIELD_GREENS.length - 1];
+      const FIELD = [...FIELD_GREENS, mix(last, bg, 0.35), mix(last, bg, 0.7), bg];
+      const light = bg[0] * 0.299 + bg[1] * 0.587 + bg[2] * 0.114 > 140;
+      const fringe = light
+        ? [toHex(mix(hex("#4a8548"), bg, 0.55)), toHex(mix(hex("#4a8548"), bg, 0.8))]
+        : [toHex(mix(hex("#173b2b"), bg, 0.6)), toHex(bg)];
       HZ = Math.round(H * 0.5);
       const LW = W + MARGIN * 2;
 
@@ -254,7 +266,7 @@ export default function MeadowScene() {
         });
       }
       for (let x = 0; x < W; x += 1 + ((R() * 2) | 0)) {
-        blades.push({ x, y: H, d: 1, len: 4 + ((R() * 12) | 0), c: R() < 0.5 ? "#0f1a2e" : "#0b0c22", ph: R() * 6 });
+        blades.push({ x, y: H, d: 1, len: 4 + ((R() * 12) | 0), c: R() < 0.5 ? fringe[0] : fringe[1], ph: R() * 6 });
       }
       blades.sort((a, b) => (a.c < b.c ? -1 : 1));
 
@@ -368,6 +380,12 @@ export default function MeadowScene() {
     });
     ro.observe(hero);
 
+    // Rebuild when the theme changes (toggle button or system setting).
+    const mo = new MutationObserver(rebuild);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    const mqTheme = window.matchMedia("(prefers-color-scheme: light)");
+    mqTheme.addEventListener("change", rebuild);
+
     const onMove = (e: PointerEvent) => {
       tmx = (e.clientX / window.innerWidth - 0.5) * 2;
     };
@@ -391,6 +409,8 @@ export default function MeadowScene() {
       cancelAnimationFrame(raf);
       clearTimeout(resizeTimer);
       ro.disconnect();
+      mo.disconnect();
+      mqTheme.removeEventListener("change", rebuild);
       io.disconnect();
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("visibilitychange", onVisibility);

@@ -183,3 +183,25 @@ export const mascotQuotes = [
   "Daro speaks Flutter and native Android.",
   "Scroll down for the quest log!",
 ];
+
+// Blog posts. Posts without a `url` show as "Coming soon".
+// When a post is published, add its link as `url` and it becomes clickable.
+export type Post = { title: string; summary: string; tag: string; url?: string };
+
+export const posts: Post[] = [
+  {
+    title: "Moving an Android app from monolith to multi-module",
+    summary: "What changed for build times, team ownership and releases after splitting the codebase.",
+    tag: "Architecture",
+  },
+  {
+    title: "Shipping a logistics app to 100k users",
+    summary: "Lessons from building a public Android app from a blank project to a large user base.",
+    tag: "Android",
+  },
+  {
+    title: "Flutter or native: how I choose for a new app",
+    summary: "The questions I ask before picking Flutter or native Android for a project.",
+    tag: "Flutter",
+  },
+];

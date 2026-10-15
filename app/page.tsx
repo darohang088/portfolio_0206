@@ -5,6 +5,7 @@ import QuestLog from "@/components/QuestLog";
 import Trophies from "@/components/Trophies";
 import Inventory from "@/components/Inventory";
 import SavePoints from "@/components/SavePoints";
+import Blogs from "@/components/Blogs";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
@@ -21,6 +22,7 @@ export default function Home() {
         <Trophies />
         <Inventory />
         <SavePoints />
+        <Blogs />
         <Contact />
       </main>
       <Footer />

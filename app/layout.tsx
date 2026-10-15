@@ -17,6 +17,8 @@ const pixelify = Pixelify_Sans({
   display: "swap",
 });
 
+const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}`;
+
 export const metadata: Metadata = {
   title: `${profile.name} · Android & Flutter Engineer`,
   description: `${profile.name}, Android Development Engineer and Flutter & native developer in Phnom Penh, Cambodia.`,
@@ -26,12 +28,15 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#06071a",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${silkscreen.variable} ${pixelify.variable}`}>
+    <html lang="en" className={`${silkscreen.variable} ${pixelify.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Apply the saved theme before the page paints, so it never flashes. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   );

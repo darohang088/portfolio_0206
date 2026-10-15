@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import PixelSprite from "./PixelSprite";
+import ThemeToggle from "./ThemeToggle";
 import { COIN, COIN_PAL } from "@/lib/sprites";
 import { profile } from "@/data/profile";
 
@@ -9,6 +10,7 @@ const LINKS = [
   { href: "#quests", label: "Quests" },
   { href: "#trophies", label: "Trophies" },
   { href: "#inventory", label: "Inventory" },
+  { href: "#blogs", label: "Blogs" },
   { href: "#contact", label: "Contact" },
 ];
 
@@ -42,17 +44,20 @@ export default function Nav() {
             </li>
           ))}
         </ul>
-        <button
-          className="menu-btn"
-          aria-label="Open menu"
-          aria-expanded={open}
-          aria-controls="links"
-          onClick={() => setOpen((o) => !o)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
+        <div className="nav-actions">
+          <ThemeToggle />
+          <button
+            className="menu-btn"
+            aria-label="Open menu"
+            aria-expanded={open}
+            aria-controls="links"
+            onClick={() => setOpen((o) => !o)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        </div>
       </div>
       <div className="xp" aria-hidden="true">
         <i style={{ width: `${progress * 100}%` }} />

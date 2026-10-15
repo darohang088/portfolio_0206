@@ -84,3 +84,30 @@ export const PHONE_PAL: Palette = {
   p: "#f58fbf",
   a: "#8bd450",
 };
+
+export const SUN = [
+  ".....r.....",
+  ".r...r...r.",
+  "..r.....r..",
+  "....YYY....",
+  "...YwwYY...",
+  "rr.YwYYY.rr",
+  "...YYYYY...",
+  "....YYY....",
+  "..r.....r..",
+  ".r...r...r.",
+  ".....r.....",
+];
+export const SUN_PAL: Palette = { r: "#f59f2a", Y: "#f7c948", w: "#fff3c4" };
+
+// A crescent: a disc with an offset disc cut out of it, plus a small star.
+export const MOON = Array.from({ length: 11 }, (_, y) =>
+  Array.from({ length: 11 }, (_, x) => {
+    if (x === 9 && y === 8) return "s";
+    const inMoon = (x - 5) ** 2 + (y - 5) ** 2 <= 5.2 ** 2;
+    const cut = (x - 7.5) ** 2 + (y - 3) ** 2;
+    if (!inMoon || cut <= 4.3 ** 2) return ".";
+    return cut <= 5.6 ** 2 ? "d" : "m";
+  }).join(""),
+);
+export const MOON_PAL: Palette = { m: "#4a4f9a", d: "#7d84c9", s: "#e0a21a" };
