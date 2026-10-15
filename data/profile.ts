@@ -40,11 +40,27 @@ export type Role = {
   duration: string;
   location?: string;
   rewards: string[];
+  // Skills for this role. If LinkedIn lists more than are written here, set skillTotal.
   skills?: string[];
-  moreSkills?: number;
+  skillTotal?: number;
 };
 
 // One entry per company, with every role held there (newest first), like LinkedIn.
+// Colour group for each skill chip: tech, tools or teamwork.
+export const skillKinds: Record<string, "tech" | "tool" | "team"> = {
+  XML: "tech",
+  "Object-Oriented Programming (OOP)": "tech",
+  Firebase: "tech",
+  Flutter: "tech",
+  Android: "tech",
+  "Unit Testing": "tech",
+  SQLite: "tech",
+  "Power BI": "tool",
+  "Agile & Waterfall Methodologies": "team",
+  Communication: "team",
+  "Team Development": "team",
+};
+
 export type Company = {
   org: string;
   logo: string;
@@ -73,7 +89,7 @@ export const experience: Company[] = [
           "Worked on merchant development for the bank's mobile products.",
         ],
         skills: ["Agile & Waterfall Methodologies", "Object-Oriented Programming (OOP)"],
-        moreSkills: 15,
+        skillTotal: 17,
       },
       {
         title: "Assistant Manager, Android Development",
@@ -81,8 +97,19 @@ export const experience: Company[] = [
         duration: "1 yr 7 mos",
         location: "Phnom Penh, Cambodia",
         rewards: ["Managed Android development work, turning business requirements into app features."],
-        skills: ["XML", "Communication"],
-        moreSkills: 9,
+        skills: [
+          "XML",
+          "Communication",
+          "Object-Oriented Programming (OOP)",
+          "Power BI",
+          "Agile & Waterfall Methodologies",
+          "Firebase",
+          "Flutter",
+          "Android",
+          "Unit Testing",
+          "Team Development",
+          "SQLite",
+        ],
       },
     ],
   },

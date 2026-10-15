@@ -1,3 +1,4 @@
+import RoleSkills from "./RoleSkills";
 import { experience } from "@/data/profile";
 
 // Longest stay fills the XP bar; others are scaled against it.
@@ -35,14 +36,7 @@ export default function QuestLog() {
                         <li key={x}>{x}</li>
                       ))}
                     </ul>
-                    {r.skills && (
-                      <div className="role-skills">
-                        {r.skills.map((s) => (
-                          <span key={s}>{s}</span>
-                        ))}
-                        {r.moreSkills ? <span className="more">+{r.moreSkills} skills</span> : null}
-                      </div>
-                    )}
+                    {r.skills && <RoleSkills skills={r.skills} total={r.skillTotal} />}
                   </li>
                 ))}
               </ol>
