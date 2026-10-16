@@ -56,6 +56,18 @@ export default function BuildShare() {
     });
   }, [refresh]);
 
+  // Start fresh each time the page is opened, also when coming back with the browser's Back button.
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setStep({ kind: "idle" });
+      setError("");
+      setNote("");
+    };
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
+
   const lock = () => {
     try {
       sessionStorage.removeItem(SECRET_KEY);
