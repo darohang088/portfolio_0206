@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { playerLevel } from "@/lib/level";
+import { useLang } from "@/lib/i18n";
 
 const BLOCKS = 18;
 const TZ = "Asia/Phnom_Penh";
@@ -19,6 +20,7 @@ export default function HeroHud() {
   const [p, setP] = useState(() => playerLevel());
   const [clock, setClock] = useState<{ time: string; awake: boolean } | null>(null);
   const [filled, setFilled] = useState(0);
+  const { t } = useLang();
 
   useEffect(() => {
     const now = playerLevel();
@@ -41,15 +43,15 @@ export default function HeroHud() {
   }, []);
 
   return (
-    <div className="hud" aria-label={`Level ${p.level} Android Engineer, ${p.xp}% to level ${p.level + 1}`}>
+    <div className="hud" aria-label={t("Level {lv} Android Engineer, {xp}% to level {next}", { lv: p.level, xp: p.xp, next: p.level + 1 })}>
       <div className="hud-row">
         <span className="hud-lv">
-          <b>LV {p.level}</b> · Android Engineer
+          <b>LV {p.level}</b> · {t("Android Engineer")}
         </span>
         {clock && (
           <span className={`hud-status${clock.awake ? "" : " away"}`}>
             <i aria-hidden="true" />
-            {clock.awake ? "Online" : "Sleeping"} · Phnom Penh {clock.time}
+            {clock.awake ? t("Online") : t("Sleeping")} · {t("Phnom Penh")} {clock.time}
           </span>
         )}
       </div>
@@ -60,7 +62,7 @@ export default function HeroHud() {
           ))}
         </span>
         <span className="hud-xp">
-          XP to Lv {p.level + 1}: {p.xp}%
+          {t("XP to Lv {n}: {xp}%", { n: p.level + 1, xp: p.xp })}
         </span>
       </div>
     </div>

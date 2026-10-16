@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import ThemeCanvas from "./ThemeCanvas";
 import { heroThemes } from "@/data/themes";
 import { setHeroTheme, useHeroTheme } from "@/lib/heroTheme";
+import { useLang } from "@/lib/i18n";
 
 // The Theme page: pick a background to preview it live, then Apply it to the home page.
 export default function ThemeGallery() {
+  const { t } = useLang();
   const applied = useHeroTheme();
   const [picked, setPicked] = useState(applied.id);
   const [justApplied, setJustApplied] = useState(false);
@@ -28,7 +30,7 @@ export default function ThemeGallery() {
       <div className="theme-main">
         <div className="theme-stage" ref={stage}>
           <ThemeCanvas theme={theme} />
-          <span className="theme-stage-tag">Preview · {theme.name}</span>
+          <span className="theme-stage-tag">{t("Preview · {name}", { name: t(theme.name) })}</span>
         </div>
 
         <div className="theme-actions">
@@ -38,25 +40,25 @@ export default function ThemeGallery() {
             onClick={apply}
             disabled={isApplied}
           >
-            {isApplied ? "✓ Applied" : "Apply background"}
+            {isApplied ? t("✓ Applied") : t("Apply background")}
           </button>
           {justApplied && isApplied && (
             <a className="btn btn-ghost" href="/">
-              See it on home →
+              {t("See it on home →")}
             </a>
           )}
         </div>
       </div>
 
       <ul className="theme-grid">
-        {heroThemes.map((t) => (
-          <li key={t.id}>
+        {heroThemes.map((th) => (
+          <li key={th.id}>
             <button
               type="button"
-              className={`theme-card${t.id === picked ? " on" : ""}`}
-              aria-pressed={t.id === picked}
+              className={`theme-card${th.id === picked ? " on" : ""}`}
+              aria-pressed={th.id === picked}
               onClick={() => {
-                setPicked(t.id);
+                setPicked(th.id);
                 setJustApplied(false);
                 // On small screens the preview can be off-screen; bring it back into view.
                 const top = stage.current?.getBoundingClientRect().top ?? 0;
@@ -68,14 +70,14 @@ export default function ThemeGallery() {
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={t.thumb} alt="" width={480} height={270} />
-              <span className="theme-name">{t.name}</span>
+              <img src={th.thumb} alt="" width={480} height={270} />
+              <span className="theme-name">{t(th.name)}</span>
               <span className="theme-state">
-                {t.id === applied.id
-                  ? "✓ In use"
-                  : t.id === picked
-                    ? "Previewing"
-                    : "Preview"}
+                {th.id === applied.id
+                  ? t("✓ In use")
+                  : th.id === picked
+                    ? t("Previewing")
+                    : t("Preview")}
               </span>
             </button>
           </li>

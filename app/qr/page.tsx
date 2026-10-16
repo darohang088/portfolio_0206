@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/Nav";
+import PageHead from "@/components/PageHead";
 import QrMaker from "@/components/QrMaker";
 import Footer from "@/components/Footer";
 import ClickSparks from "@/components/ClickSparks";
@@ -17,14 +18,7 @@ export default function Page() {
       <main>
         <section className="block">
           <div className="wrap">
-            <a className="back-link" href="/tools">
-              ← All tools
-            </a>
-            <div className="head">
-              <p className="eyebrow">Tools · QR Code Maker</p>
-              <h2>QR code maker</h2>
-              <p className="lede">Type any text or link, pick a frame, and download a ready-to-print QR code.</p>
-            </div>
+            <PageHead back eyebrow="Tools · QR Code Maker" title="QR code maker" lede="Type any text or link, pick a frame, and download a ready-to-print QR code." />
             <QrMaker />
           </div>
         </section>

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
+import LangToggle from "./LangToggle";
+import { useLang } from "@/lib/i18n";
 import { profile } from "@/data/profile";
 
 const LINKS: { href: string; label: string; page?: boolean }[] = [
@@ -17,6 +19,7 @@ const LINKS: { href: string; label: string; page?: boolean }[] = [
 
 // On other pages (like an app's detail page) the links point back to sections of the home page.
 export default function Nav({ home = true }: { home?: boolean }) {
+  const { t } = useLang();
   const base = home ? "" : "/";
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("");
@@ -79,7 +82,7 @@ export default function Nav({ home = true }: { home?: boolean }) {
   return (
     <header className={`nav${open ? " open" : ""}`}>
       <div className="wrap nav-row">
-        <a className="brand" href={`${base}#top`} aria-label={`${profile.name}, back to top`}>
+        <a className="brand" href={`${base}#top`} aria-label={t("{name}, back to top", { name: profile.name })}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="avatar" src="/daro-avatar.png" alt="" width={40} height={40} />
           {profile.name}
@@ -98,16 +101,17 @@ export default function Nav({ home = true }: { home?: boolean }) {
                   lockUntil.current = Date.now() + 1200;
                 }}
               >
-                {l.label}
+                {t(l.label)}
               </a>
             </li>
           ))}
         </ul>
         <div className="nav-actions">
+          <LangToggle />
           <ThemeToggle />
           <button
             className="menu-btn"
-            aria-label="Open menu"
+            aria-label={t("Open menu")}
             aria-expanded={open}
             aria-controls="links"
             onClick={() => setOpen((o) => !o)}

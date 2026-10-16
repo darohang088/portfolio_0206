@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "@/lib/i18n";
 import { useRef, useState } from "react";
 import CopyButton from "./CopyButton";
 import type { CertInfo } from "@/lib/crypto/x509";
@@ -7,10 +8,11 @@ import type { CertInfo } from "@/lib/crypto/x509";
 type Mode = "file" | "paste";
 const ACCEPT = ".jks,.keystore,.p12,.pfx,.apk,.pem,.crt,.cer,.der,.rsa,.dsa,.ec,.p7b";
 
-const fmtDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+const fmtDate = (d: Date, lang: string) => d.toLocaleDateString(lang === "km" ? "km-KH" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
 
 // Keystore fingerprints: drop a keystore, APK or certificate and get MD5 / SHA-1 / SHA-256.
 export default function FingerprintTool() {
+  const { t, tr } = useLang();
   const [mode, setMode] = useState<Mode>("file");
   const [drag, setDrag] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -37,12 +39,12 @@ export default function FingerprintTool() {
           pending.current = { bytes, name };
           setNeedPw(true);
           setResult(null);
-          if (password !== undefined) setError(e.message);
+          if (password !== undefined) setError(t(e.message));
         } else throw e;
       }
     } catch (e) {
       setResult(null);
-      setError(e instanceof Error ? e.message : "Couldn't read this file.");
+      setError(t(e instanceof Error ? e.message : "Couldn't read this file."));
     } finally {
       setBusy(false);
     }
@@ -50,7 +52,7 @@ export default function FingerprintTool() {
 
   const fromFile = async (f: File | undefined) => {
     if (!f) return;
-    if (f.size > 300 * 1024 * 1024) return setError("That file is too big.");
+    if (f.size > 300 * 1024 * 1024) return setError(t("That file is too big."));
     setNeedPw(false);
     setPw("");
     run(new Uint8Array(await f.arrayBuffer()), f.name);
@@ -67,7 +69,7 @@ export default function FingerprintTool() {
 
   return (
     <div className="qr-tool">
-      <div className="qr-tabs two" role="tablist" aria-label="Input">
+      <div className="qr-tabs two" role="tablist" aria-label={t("Input")}>
         {(["file", "paste"] as Mode[]).map((m) => (
           <button
             key={m}
@@ -80,7 +82,7 @@ export default function FingerprintTool() {
               setMode(m);
             }}
           >
-            {m === "file" ? "Drop a file" : "Paste"}
+            {t(m === "file" ? "Drop a file" : "Paste")}
           </button>
         ))}
       </div>
@@ -107,7 +109,7 @@ export default function FingerprintTool() {
               e.target.value = "";
             }}
           />
-          <b>{busy ? "Reading…" : "Drop a keystore, APK or certificate"}</b>
+          <b>{t(busy ? "Reading…" : "Drop a keystore, APK or certificate")}</b>
           <span>.jks · .keystore · .p12 · .apk · .pem · .crt · META-INF/*.RSA</span>
         </label>
       ) : (
@@ -115,12 +117,12 @@ export default function FingerprintTool() {
           className="qr-paste"
           onSubmit={(e) => {
             e.preventDefault();
-            if (text.trim()) run(new TextEncoder().encode(text), "Pasted text");
+            if (text.trim()) run(new TextEncoder().encode(text), t("Pasted text"));
           }}
         >
-          <textarea className="fp-paste" rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder={"-----BEGIN CERTIFICATE-----\nMIID…\n-----END CERTIFICATE-----\n\n…or a base64 keystore"} />
+          <textarea className="fp-paste" rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder={"-----BEGIN CERTIFICATE-----\nMIID…\n-----END CERTIFICATE-----\n\n" + t("…or a base64 keystore")} />
           <button className="btn btn-gold" type="submit" disabled={busy}>
-            Read ▶
+            {t("Read ▶")}
           </button>
           <PasteHelp />
         </form>
@@ -135,13 +137,13 @@ export default function FingerprintTool() {
           }}
         >
           <label className="field">
-            <span>🔑 Store password for {pending.current?.name}</span>
-            <input type="password" autoComplete="off" autoFocus value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Keystore password" />
+            <span>🔑 {t("Store password for {name}", { name: pending.current?.name ?? "" })}</span>
+            <input type="password" autoComplete="off" autoFocus value={pw} onChange={(e) => setPw(e.target.value)} placeholder={t("Keystore password")} />
           </label>
           <button className="btn btn-gold" type="submit" disabled={busy}>
-            Unlock ▶
+            {t("Unlock ▶")}
           </button>
-          <small>Used only in your browser to read the certificates. The private key is never decrypted.</small>
+          <small>{t("Used only in your browser to read the certificates. The private key is never decrypted.")}</small>
         </form>
       )}
 
@@ -152,37 +154,38 @@ export default function FingerprintTool() {
       {result && (
         <section className="fp-result">
           <p className="fp-kind">
-            <b>{result.name}</b> · {result.kind} · {result.certs.length} certificate{result.certs.length > 1 ? "s" : ""}
+            <b>{result.name}</b> · {result.kind} · {t(result.certs.length > 1 ? "{n} certificates" : "{n} certificate", { n: result.certs.length })}
           </p>
           {result.certs.map((c, i) => (
             <CertCard key={c.sha256} c={c} i={i} />
           ))}
           <div className="fp-help">
-            <b>Where to paste these</b>
+            <b>{t("Where to paste these")}</b>
             <ul>
               <li>
-                <b>Firebase</b> (Project settings → Your apps): SHA-1 and SHA-256
+                {tr("{b} (Project settings → Your apps): SHA-1 and SHA-256", { b: <b>Firebase</b> })}
               </li>
               <li>
-                <b>Google Sign-In / Maps / Google Cloud API keys</b>: SHA-1 with your package name
+                {tr("{b}: SHA-1 with your package name", { b: <b>{t("Google Sign-In / Maps / Google Cloud API keys")}</b> })}
               </li>
               <li>
-                <b>Facebook Login</b>: the key hash
+                {tr("{b}: the key hash", { b: <b>Facebook Login</b> })}
               </li>
               <li>
-                <b>Play App Signing</b>: Google re-signs your app, so also add the <i>app signing key</i> fingerprints from Play Console → Setup → App signing.
+                {tr("{b}: Google re-signs your app, so also add the {i} fingerprints from Play Console → Setup → App signing.", { b: <b>Play App Signing</b>, i: <i>{t("app signing key")}</i> })}
               </li>
             </ul>
           </div>
         </section>
       )}
 
-      <p className="apk-private fp-private">🔒 Read in your browser. Your keystore and password are never uploaded.</p>
+      <p className="apk-private fp-private">{t("🔒 Read in your browser. Your keystore and password are never uploaded.")}</p>
     </div>
   );
 }
 
 function CertCard({ c, i }: { c: CertInfo; i: number }) {
+  const { t, lang } = useLang();
   const now = Date.now();
   const expired = c.validTo.getTime() < now;
   const soon = !expired && c.validTo.getTime() - now < 1000 * 60 * 60 * 24 * 365;
@@ -190,55 +193,55 @@ function CertCard({ c, i }: { c: CertInfo; i: number }) {
     ["SHA-1", c.sha1],
     ["SHA-256", c.sha256],
     ["MD5", c.md5],
-    ["Key hash (Facebook)", c.facebookKeyHash],
+    [t("Key hash (Facebook)"), c.facebookKeyHash],
   ];
   return (
     <article className="fp-card">
       <header>
-        <h3>{c.alias ?? c.subject.match(/CN=([^,]+)/)?.[1] ?? `Certificate ${i + 1}`}</h3>
+        <h3>{c.alias ?? c.subject.match(/CN=([^,]+)/)?.[1] ?? t("Certificate {n}", { n: i + 1 })}</h3>
         <div className="khqr-badges">
           {c.source.split(" · ").map((s) => (
             <span key={s} className="sev sev-info">
-              {s}
+              {t(s)}
             </span>
           ))}
-          {c.debug && <span className="sev sev-high">Debug key</span>}
-          {expired && <span className="sev sev-high">Expired</span>}
-          {soon && <span className="sev sev-low">Expires within a year</span>}
+          {c.debug && <span className="sev sev-high">{t("Debug key")}</span>}
+          {expired && <span className="sev sev-high">{t("Expired")}</span>}
+          {soon && <span className="sev sev-low">{t("Expires within a year")}</span>}
         </div>
       </header>
       <dl className="khqr-fields fp-meta">
         <div>
-          <dt>Owner</dt>
+          <dt>{t("Owner")}</dt>
           <dd>{c.subject}</dd>
         </div>
         {!c.selfSigned && (
           <div>
-            <dt>Issuer</dt>
+            <dt>{t("Issuer")}</dt>
             <dd>{c.issuer}</dd>
           </div>
         )}
         <div>
-          <dt>Valid</dt>
+          <dt>{t("Valid")}</dt>
           <dd>
-            {fmtDate(c.validFrom)} → {fmtDate(c.validTo)}
+            {fmtDate(c.validFrom, lang)} → {fmtDate(c.validTo, lang)}
           </dd>
         </div>
         <div>
-          <dt>Key</dt>
+          <dt>{t("Key")}</dt>
           <dd>
             {c.keyType} · {c.signature}
           </dd>
         </div>
         <div>
-          <dt>Serial</dt>
+          <dt>{t("Serial")}</dt>
           <dd>{c.serial}</dd>
         </div>
       </dl>
-      {c.debug && <p className="tester-err">This is Android&apos;s debug key. Use it for development only, never for a Play Store release.</p>}
+      {c.debug && <p className="tester-err">{t("This is Android's debug key. Use it for development only, never for a Play Store release.")}</p>}
       <div className="fp-prints">
         {rows.map(([label, value]) => {
-          const id = `fp-${i}-${label.replace(/\W/g, "")}`;
+          const id = `fp-${i}-${label.replace(/\W/g, "") || label.length}`;
           return (
             <div key={label} className="fp-row">
               <span>{label}</span>
@@ -279,14 +282,15 @@ const HELP: { title: string; note: string; cmds?: [string, string][] }[] = [
 ];
 
 function PasteHelp() {
+  const { t } = useLang();
   return (
     <details className="paste-help">
-      <summary>💡 How do I get this? Where do I copy it from?</summary>
+      <summary>{t("💡 How do I get this? Where do I copy it from?")}</summary>
       <ol>
         {HELP.map((h, i) => (
           <li key={h.title}>
-            <b>{h.title}</b>
-            <p>{h.note}</p>
+            <b>{t(h.title)}</b>
+            <p>{t(h.note)}</p>
             {h.cmds?.map(([label, cmd], k) => (
               <Cmd key={label} id={`help-${i}-${k}`} label={label} cmd={cmd} />
             ))}
@@ -298,9 +302,10 @@ function PasteHelp() {
 }
 
 function Cmd({ id, label, cmd }: { id: string; label: string; cmd: string }) {
+  const { t } = useLang();
   return (
     <div className="paste-cmd">
-      <span>{label}</span>
+      <span>{t(label)}</span>
       <code id={id}>{cmd}</code>
       <CopyButton text={cmd} targetId={id} />
     </div>

@@ -1,7 +1,10 @@
+"use client";
+
 import HeroScene from "./HeroScene";
 import Mascot from "./Mascot";
 import TypedRoles from "./TypedRoles";
-import { profile } from "@/data/profile";
+import { useContent } from "@/lib/i18n/content";
+import { useLang } from "@/lib/i18n";
 import HeroHud from "./HeroHud";
 
 function GoldWord({ word, start }: { word: string; start: number }) {
@@ -18,6 +21,8 @@ function GoldWord({ word, start }: { word: string; start: number }) {
 }
 
 export default function Hero() {
+  const { profile } = useContent();
+  const { t } = useLang();
   return (
     <section className="hero" id="top">
       <HeroScene />
@@ -32,16 +37,16 @@ export default function Hero() {
         <TypedRoles roles={profile.roles} />
         <div className="cta-row">
           <a className="btn btn-gold" href="#quests">
-            Start quest log
+            {t("Start quest log")}
           </a>
           <a className="btn btn-ghost" href="#contact">
-            Team up
+            {t("Team up")}
           </a>
         </div>
       </div>
       <Mascot />
       <div className="shipped wrap">
-        <span className="shipped-label">Shipped apps at</span>
+        <span className="shipped-label">{t("Shipped apps at")}</span>
         {profile.companies.map((c) => (
           <span key={c.name} className="mark">
             <img className="logo-tile" src={c.logo} alt="" width={44} height={44} />

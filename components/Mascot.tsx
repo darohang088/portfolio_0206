@@ -2,10 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import BlinkingPhone from "./BlinkingPhone";
-import { mascotQuotes } from "@/data/profile";
+import { useContent } from "@/lib/i18n/content";
+import { useLang } from "@/lib/i18n";
 
 export default function Mascot() {
-  const [line, setLine] = useState("Hi! I'm Dororo. Tap me!");
+  const { mascotQuotes } = useContent();
+  const { t } = useLang();
+  const [line, setLine] = useState("");
   const [show, setShow] = useState(false);
   const [happy, setHappy] = useState(false);
   const next = useRef(0);
@@ -19,11 +22,12 @@ export default function Mascot() {
   };
 
   useEffect(() => {
-    const t = setTimeout(() => say("Hi! I'm Dororo. Tap me!"), 1800);
+    const timer = setTimeout(() => say(t("Hi! I'm Dororo. Tap me!")), 1800);
     return () => {
-      clearTimeout(t);
+      clearTimeout(timer);
       clearTimeout(hideTimer.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onClick = () => {
@@ -34,7 +38,7 @@ export default function Mascot() {
   };
 
   return (
-    <button className="mascot" aria-label="Say hi to Dororo, the pixel phone" onClick={onClick}>
+    <button className="mascot" aria-label={t("Say hi to Dororo, the pixel phone")} onClick={onClick}>
       <BlinkingPhone happy={happy} />
       <span className={`bubble${show ? " show" : ""}`} role="status">
         {line}

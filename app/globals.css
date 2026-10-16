@@ -771,3 +771,18 @@ footer{border-top:3px solid var(--line);padding-block:30px 40px;color:var(--mute
 .qr-tool>*{min-width:0}
 .qr-drop span{overflow-wrap:anywhere}
 .pp-report>*,.pp-list>*,.fp-result>*,.diff-report>*,.khqr-result>*{min-width:0}
+
+/* Language switch + Khmer typography */
+.lang-toggle{display:flex;height:42px;padding:3px;gap:2px;background:var(--panel);border:3px solid var(--line);border-radius:6px;box-shadow:0 3px 0 var(--shadow)}
+.lang-toggle button{padding:0 9px;border:0;border-radius:3px;background:none;color:var(--muted);font:700 12px var(--f-pixel);letter-spacing:.04em;cursor:pointer}
+.lang-toggle button[lang="km"]{font:600 14px var(--font-khmer),"Noto Sans Khmer",sans-serif;letter-spacing:0}
+.lang-toggle button.on{background:var(--gold);color:#1a1030}
+.lang-toggle button:not(.on):hover{color:var(--text)}
+html[lang="km"]{--f-display:var(--font-silkscreen),var(--font-khmer),"Noto Sans Khmer",ui-monospace,monospace;--f-pixel:var(--font-silkscreen),var(--font-khmer),"Noto Sans Khmer",ui-monospace,monospace;--f-body:var(--font-pixelify),var(--font-khmer),"Noto Sans Khmer",system-ui,sans-serif}
+html[lang="km"] body *{letter-spacing:0!important}
+html[lang="km"] :is(h1,h2,h3,h4,.eyebrow,.lede,p,li,dd,summary,.tagline,.line){line-height:1.75}
+html[lang="km"] h2{line-height:1.5}
+/* Phones: show just the other language as one button, to keep the nav on one line. */
+@media (max-width:480px){.lang-toggle button.on{display:none}.lang-toggle button{padding:0 8px}}
+@media (max-width:420px){.brand{font-size:18px;gap:8px}.nav-actions{gap:6px}}
+@media (max-width:370px){.brand{font-size:16px;gap:6px}.nav-actions{gap:4px}}

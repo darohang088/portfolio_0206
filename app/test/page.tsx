@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/Nav";
+import PageHead from "@/components/PageHead";
 import TestProjects from "@/components/TestProjects";
 import Footer from "@/components/Footer";
 import ClickSparks from "@/components/ClickSparks";
@@ -17,14 +18,7 @@ export default function TestPage() {
       <main className="test-page">
         <section className="block test-block">
           <div className="wrap">
-            <a className="back-link" href="/tools">
-              ← All tools
-            </a>
-            <div className="head">
-              <p className="eyebrow">Tools · Test App</p>
-              <h2>Test projects</h2>
-              <p className="lede">Pick a project and enter its PIN to open the phone preview.</p>
-            </div>
+            <PageHead back eyebrow="Tools · Test App" title="Test projects" lede="Pick a project and enter its PIN to open the phone preview." />
             <TestProjects />
           </div>
         </section>

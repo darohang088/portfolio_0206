@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/Nav";
+import PageHead from "@/components/PageHead";
 import ThemeGallery from "@/components/ThemeGallery";
 import Footer from "@/components/Footer";
 import ClickSparks from "@/components/ClickSparks";
@@ -17,11 +18,7 @@ export default function ThemePage() {
       <main className="theme-page">
         <section className="block">
           <div className="wrap">
-            <div className="head">
-              <p className="eyebrow">Theme</p>
-              <h2>Choose a background</h2>
-              <p className="lede">Tap a background to preview it, then press Apply to use it on the home page.</p>
-            </div>
+            <PageHead eyebrow="Theme" title="Choose a background" lede="Tap a background to preview it, then press Apply to use it on the home page." />
             <ThemeGallery />
           </div>
         </section>

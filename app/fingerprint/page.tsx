@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/Nav";
+import PageHead from "@/components/PageHead";
 import FingerprintTool from "@/components/FingerprintTool";
 import Footer from "@/components/Footer";
 import ClickSparks from "@/components/ClickSparks";
@@ -17,14 +18,7 @@ export default function Page() {
       <main>
         <section className="block">
           <div className="wrap">
-            <a className="back-link" href="/tools">
-              ← All tools
-            </a>
-            <div className="head">
-              <p className="eyebrow">Tools · Keystore Fingerprints</p>
-              <h2>Keystore fingerprints</h2>
-              <p className="lede">Get the MD5, SHA-1 and SHA-256 of your signing key from a keystore, APK or certificate, for Firebase, Google Sign-In and payment SDKs. No terminal needed.</p>
-            </div>
+            <PageHead back eyebrow="Tools · Keystore Fingerprints" title="Keystore fingerprints" lede="Get the MD5, SHA-1 and SHA-256 of your signing key from a keystore, APK or certificate, for Firebase, Google Sign-In and payment SDKs. No terminal needed." />
             <FingerprintTool />
           </div>
         </section>

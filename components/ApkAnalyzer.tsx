@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "@/lib/i18n";
 import { useRef, useState } from "react";
 import type { ApkReport, Finding, Severity } from "@/lib/apk/analyze";
 
@@ -11,6 +12,7 @@ const mb = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024)
 
 // APK page: drop an APK, it's checked in the browser, and a security report appears.
 export default function ApkAnalyzer() {
+  const { t, tr } = useLang();
   const [drag, setDrag] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [done, setDone] = useState<string[]>([]);
@@ -22,8 +24,8 @@ export default function ApkAnalyzer() {
     if (!file || busy) return;
     setError("");
     setReport(null);
-    if (!/\.apk$/i.test(file.name)) return setError("Please choose an .apk file.");
-    if (file.size > MAX_MB * 1024 * 1024) return setError(`That file is over ${MAX_MB} MB. Try a smaller APK.`);
+    if (!/\.apk$/i.test(file.name)) return setError(t("Please choose an .apk file."));
+    if (file.size > MAX_MB * 1024 * 1024) return setError(t("That file is over {max} MB. Try a smaller APK.", { max: MAX_MB }));
     setDone([]);
     try {
       // Load the analyzer only when needed, so the page itself stays light.
@@ -37,7 +39,7 @@ export default function ApkAnalyzer() {
       });
       setReport(r);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't read this APK.");
+      setError(t(e instanceof Error ? e.message : "Couldn't read this APK."));
     } finally {
       setBusy(null);
       if (input.current) input.current.value = "";
@@ -67,19 +69,19 @@ export default function ApkAnalyzer() {
           <ul className="apk-steps" aria-live="polite">
             {STEPS.map((s) => (
               <li key={s} className={done.includes(s) ? "ok" : s === busy ? "now" : ""}>
-                {done.includes(s) ? "✓" : s === busy ? "▶" : "·"} {s}
+                {done.includes(s) ? "✓" : s === busy ? "▶" : "·"} {t(s)}
               </li>
             ))}
           </ul>
         ) : (
           <>
-            <b>{drag ? "Drop it!" : "Drag & drop your APK here"}</b>
+            <b>{t(drag ? "Drop it!" : "Drag & drop your APK here")}</b>
             <span>
-              or <u>choose a file</u> · up to {MAX_MB} MB
+              {tr("or {choose} · up to {max} MB", { choose: <u>{t("choose a file")}</u>, max: MAX_MB })}
             </span>
           </>
         )}
-        <span className="apk-private">🔒 Checked in your browser. The APK is never uploaded.</span>
+        <span className="apk-private">{t("🔒 Checked in your browser. The APK is never uploaded.")}</span>
       </label>
       <p className="tester-err" role="alert">
         {error}
@@ -91,9 +93,10 @@ export default function ApkAnalyzer() {
 }
 
 function Report({ r, onAgain }: { r: ApkReport; onAgain: () => void }) {
+  const { t } = useLang();
   const counts = (["high", "medium", "low", "pass"] as Severity[]).map((s) => [s, r.findings.filter((f) => f.severity === s).length] as const);
   return (
-    <section className="apk-report" aria-label="Security report">
+    <section className="apk-report" aria-label={t("Security report")}>
       <div className="apk-summary">
         <div className={`apk-grade g-${r.grade}`} style={{ "--score": r.score } as React.CSSProperties}>
           <b>{r.grade}</b>
@@ -106,34 +109,34 @@ function Report({ r, onAgain }: { r: ApkReport; onAgain: () => void }) {
           </p>
           <dl>
             <div>
-              <dt>Min SDK</dt>
+              <dt>{t("Min SDK")}</dt>
               <dd>{r.minSdk ?? "—"}</dd>
             </div>
             <div>
-              <dt>Target SDK</dt>
+              <dt>{t("Target SDK")}</dt>
               <dd>{r.targetSdk ?? "—"}</dd>
             </div>
             <div>
-              <dt>Permissions</dt>
+              <dt>{t("Permissions")}</dt>
               <dd>{r.permissions.length}</dd>
             </div>
             <div>
-              <dt>Screens</dt>
+              <dt>{t("Screens")}</dt>
               <dd>{r.counts.activities}</dd>
             </div>
             <div>
-              <dt>DEX files</dt>
+              <dt>{t("DEX files")}</dt>
               <dd>{r.counts.dexFiles}</dd>
             </div>
             <div>
-              <dt>CPU</dt>
-              <dd>{r.abis.join(", ") || "any"}</dd>
+              <dt>{t("CPU")}</dt>
+              <dd>{r.abis.join(", ") || t("any")}</dd>
             </div>
           </dl>
           <div className="apk-counts">
             {counts.map(([s, n]) => (
               <span key={s} className={`sev sev-${s}`}>
-                {n} {LABEL[s]}
+                {n} {t(LABEL[s])}
               </span>
             ))}
           </div>
@@ -148,11 +151,11 @@ function Report({ r, onAgain }: { r: ApkReport; onAgain: () => void }) {
 
       <div className="apk-foot">
         <p>
-          This is a quick static check based on common OWASP mobile checks. It reads the manifest, signature and code strings, but doesn&apos;t run the app, so it can miss
-          issues and some results need a human to confirm.
+          {t("This is a quick static check based on common OWASP mobile checks. It reads the manifest, signature and code strings, but doesn't run the app, so it can miss")}
+          {t("issues and some results need a human to confirm.")}
         </p>
         <button className="btn btn-gold" type="button" onClick={onAgain}>
-          Check another APK
+          {t("Check another APK")}
         </button>
       </div>
     </section>
@@ -160,17 +163,18 @@ function Report({ r, onAgain }: { r: ApkReport; onAgain: () => void }) {
 }
 
 function FindingRow({ f }: { f: Finding }) {
+  const { t } = useLang();
   return (
     <li className={`apk-finding sev-${f.severity}`}>
       <details open={f.severity === "high"}>
         <summary>
-          <span className={`sev sev-${f.severity}`}>{LABEL[f.severity]}</span>
-          <b>{f.title}</b>
+          <span className={`sev sev-${f.severity}`}>{t(LABEL[f.severity])}</span>
+          <b>{t(f.title)}</b>
         </summary>
-        <p>{f.detail}</p>
+        <p>{t(f.detail)}</p>
         {f.fix && (
           <p className="apk-fix">
-            <span>Fix:</span> {f.fix}
+            <span>{t("Fix:")}</span> {t(f.fix)}
           </p>
         )}
         {f.items && (

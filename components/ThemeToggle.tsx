@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import PixelSprite from "./PixelSprite";
 import { MOON, MOON_PAL, SUN, SUN_PAL } from "@/lib/sprites";
+import { useLang } from "@/lib/i18n";
 
 type Theme = "light" | "dark";
 
@@ -14,6 +15,7 @@ function currentTheme(): Theme {
 
 // Shows the sun in dark mode (switch to light) and the moon in light mode (switch to dark).
 export default function ThemeToggle() {
+  const { t } = useLang();
   const [theme, setTheme] = useState<Theme>("dark");
   const [spin, setSpin] = useState(false);
 
@@ -38,7 +40,7 @@ export default function ThemeToggle() {
     setTimeout(() => setSpin(false), 450);
   };
 
-  const label = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+  const label = theme === "dark" ? t("Switch to light mode") : t("Switch to dark mode");
   return (
     <button className={`theme-btn${spin ? " spin" : ""}`} onClick={toggle} aria-label={label} title={label}>
       {theme === "dark" ? <PixelSprite rows={SUN} palette={SUN_PAL} /> : <PixelSprite rows={MOON} palette={MOON_PAL} />}

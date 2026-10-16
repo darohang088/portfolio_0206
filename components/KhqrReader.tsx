@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "@/lib/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 import { decodeKhqr, type KhqrResult, type Tlv } from "@/lib/khqr";
@@ -43,6 +44,7 @@ async function blobToBitmap(blob: Blob) {
 
 // KHQR Reader: get a QR from an image, link, camera or clipboard and show what's inside.
 export default function KhqrReader() {
+  const { t } = useLang();
   const [mode, setMode] = useState<Mode>("upload");
   const [result, setResult] = useState<KhqrResult | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -101,14 +103,14 @@ export default function KhqrReader() {
         const bmp = await blobToBitmap(blob);
         const data = readQr(bmp);
         if (data) show(data);
-        else setError("No QR code found in this image. Try a sharper or closer picture.");
+        else setError(t("No QR code found in this image. Try a sharper or closer picture."));
       } catch {
-        setError("Couldn't open this image.");
+        setError(t("Couldn't open this image."));
       } finally {
         setBusy(false);
       }
     },
-    [show],
+    [show, t],
   );
 
   // Paste an image (or KHQR text) anywhere on the page while on the Paste tab.
@@ -139,13 +141,13 @@ export default function KhqrReader() {
       await fromBlob(await res.blob());
     } catch {
       setBusy(false);
-      setError("Couldn't load that image. Many sites block other pages from reading their images: save it and use Upload instead.");
+      setError(t("Couldn't load that image. Many sites block other pages from reading their images: save it and use Upload instead."));
     }
   };
 
   return (
     <div className="qr-tool">
-      <div className="qr-tabs" role="tablist" aria-label="How to read the QR">
+      <div className="qr-tabs" role="tablist" aria-label={t("How to read the QR")}>
         {MODES.map((m) => (
           <button
             key={m.id}
@@ -158,7 +160,7 @@ export default function KhqrReader() {
               setMode(m.id);
             }}
           >
-            {m.label}
+            {t(m.label)}
           </button>
         ))}
       </div>
@@ -179,16 +181,16 @@ export default function KhqrReader() {
           }}
         >
           <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && fromBlob(e.target.files[0])} />
-          <b>{busy ? "Reading…" : "Click to upload"}</b>
-          <span>or drag &amp; drop a KHQR image</span>
+          <b>{t(busy ? "Reading…" : "Click to upload")}</b>
+          <span>{t("or drag & drop a KHQR image")}</span>
         </label>
       )}
 
       {mode === "url" && (
         <form className="qr-row" onSubmit={loadUrl}>
-          <input className="tester-url" type="url" inputMode="url" placeholder="https://… link to a QR image" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <input className="tester-url" type="url" inputMode="url" placeholder={t("https://… link to a QR image")} value={url} onChange={(e) => setUrl(e.target.value)} />
           <button className="btn btn-gold" type="submit" disabled={busy}>
-            {busy ? "Reading…" : "Read ▶"}
+            {t(busy ? "Reading…" : "Read ▶")}
           </button>
         </form>
       )}
@@ -198,8 +200,8 @@ export default function KhqrReader() {
       {mode === "paste" && (
         <div className="qr-paste">
           <div className="qr-drop small" tabIndex={0}>
-            <b>Press Ctrl+V / ⌘V</b>
-            <span>to paste a screenshot of the QR</span>
+            <b>{t("Press Ctrl+V / ⌘V")}</b>
+            <span>{t("to paste a screenshot of the QR")}</span>
           </div>
           <form
             className="qr-row"
@@ -208,9 +210,9 @@ export default function KhqrReader() {
               if (text.trim()) showText(text);
             }}
           >
-            <input className="tester-url" placeholder="…or paste the KHQR text (starts with 000201)" value={text} onChange={(e) => setText(e.target.value)} />
+            <input className="tester-url" placeholder={t("…or paste the KHQR text (starts with 000201)")} value={text} onChange={(e) => setText(e.target.value)} />
             <button className="btn btn-gold" type="submit">
-              Decode ▶
+              {t("Decode ▶")}
             </button>
           </form>
         </div>
@@ -226,6 +228,7 @@ export default function KhqrReader() {
 }
 
 function CameraScan({ onFound }: { onFound: (data: string) => void }) {
+  const { t } = useLang();
   const video = useRef<HTMLVideoElement>(null);
   const [on, setOn] = useState(false);
   const [msg, setMsg] = useState("");
@@ -271,7 +274,7 @@ function CameraScan({ onFound }: { onFound: (data: string) => void }) {
       }
       setOn(true);
     } catch {
-      setMsg("Camera not available. Allow camera access, or use Upload instead.");
+      setMsg(t("Camera not available. Allow camera access, or use Upload instead."));
     }
   };
 
@@ -282,16 +285,16 @@ function CameraScan({ onFound }: { onFound: (data: string) => void }) {
         {on && <span className="qr-cam-box" aria-hidden="true" />}
         {!on && (
           <button className="btn btn-gold" type="button" onClick={start}>
-            📷 Start camera
+            {t("📷 Start camera")}
           </button>
         )}
       </div>
       {on && (
         <button className="mini-tool" type="button" onClick={stop}>
-          Stop camera
+          {t("Stop camera")}
         </button>
       )}
-      <p className="qr-note">{msg || "Point the camera at a KHQR. It reads it automatically."}</p>
+      <p className="qr-note">{msg || t("Point the camera at a KHQR. It reads it automatically.")}</p>
     </div>
   );
 }
@@ -308,39 +311,40 @@ function readQrVideo(v: HTMLVideoElement) {
 }
 
 function KhqrView({ r, preview }: { r: KhqrResult; preview: string | null }) {
+  const { t } = useLang();
   const [tech, setTech] = useState(false);
   const zoom = useRef<HTMLDialogElement>(null);
   const amount = r.fields.find((f) => f.label === "Amount");
   return (
-    <section className="khqr-result" aria-label="Decoded QR">
+    <section className="khqr-result" aria-label={t("Decoded QR")}>
       <div className="khqr-badges">
-        <span className={`sev ${r.isKhqr ? "sev-pass" : "sev-info"}`}>{r.isKhqr ? "✓ KHQR" : "Not KHQR"}</span>
-        {r.crcOk !== null && <span className={`sev ${r.crcOk ? "sev-pass" : "sev-high"}`}>{r.crcOk ? "✓ Checksum valid" : "✗ Checksum wrong"}</span>}
-        {r.isKhqr && <span className="sev sev-low">{r.type}</span>}
+        <span className={`sev ${r.isKhqr ? "sev-pass" : "sev-info"}`}>{r.isKhqr ? "✓ KHQR" : t("Not KHQR")}</span>
+        {r.crcOk !== null && <span className={`sev ${r.crcOk ? "sev-pass" : "sev-high"}`}>{t(r.crcOk ? "✓ Checksum valid" : "✗ Checksum wrong")}</span>}
+        {r.isKhqr && <span className="sev sev-low">{t(r.type)}</span>}
       </div>
 
       {r.isKhqr || r.fields.length > 2 ? (
         <div className="khqr-card">
           {preview && (
-            <button className="khqr-thumb-btn" type="button" onClick={() => zoom.current?.showModal()} aria-label="View the QR image larger">
+            <button className="khqr-thumb-btn" type="button" onClick={() => zoom.current?.showModal()} aria-label={t("View the QR image larger")}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="khqr-thumb" src={preview} alt="The QR image you gave" />
-              <span aria-hidden="true">🔍 Tap to view</span>
+              <img className="khqr-thumb" src={preview} alt={t("The QR image you gave")} />
+              <span aria-hidden="true">{t("🔍 Tap to view")}</span>
             </button>
           )}
           <div className="khqr-main">
-            <p className="khqr-to">Pay to</p>
-            <h3>{r.merchantName ?? "Unknown"}</h3>
-            <p className="khqr-amount">{amount?.value ?? "—"}</p>
+            <p className="khqr-to">{t("Pay to")}</p>
+            <h3>{r.merchantName ?? t("Unknown")}</h3>
+            <p className="khqr-amount">{amount ? t(amount.value) : "—"}</p>
             <dl className="khqr-fields">
               {r.fields
                 .filter((f) => !["Merchant name", "Amount"].includes(f.label))
                 .map((f) => (
                   <div key={f.label}>
-                    <dt>{f.label}</dt>
+                    <dt>{t(f.label)}</dt>
                     <dd>
                       {f.value}
-                      {f.hint && <small> · {f.hint}</small>}
+                      {f.hint && <small> · {t(f.hint)}</small>}
                     </dd>
                   </div>
                 ))}
@@ -349,7 +353,7 @@ function KhqrView({ r, preview }: { r: KhqrResult; preview: string | null }) {
         </div>
       ) : (
         <div className="khqr-card plain">
-          <p>This QR code holds:</p>
+          <p>{t("This QR code holds:")}</p>
           {/^https?:\/\//.test(r.raw) ? (
             <a href={r.raw} target="_blank" rel="noopener noreferrer nofollow">
               {r.raw} ↗
@@ -360,18 +364,18 @@ function KhqrView({ r, preview }: { r: KhqrResult; preview: string | null }) {
         </div>
       )}
 
-      {r.crcOk === false && <p className="tester-err">The checksum doesn&apos;t match (expected {r.crcExpected}). This QR may have been edited. Don&apos;t pay with it.</p>}
+      {r.crcOk === false && <p className="tester-err">{t("The checksum doesn't match (expected {crc}). This QR may have been edited. Don't pay with it.", { crc: r.crcExpected ?? "" })}</p>}
       {r.errors.map((e) => (
         <p key={e} className="tester-err">
-          {e}
+          {t(e)}
         </p>
       ))}
 
       {preview && (
         <dialog ref={zoom} className="img-zoom" onClick={(e) => e.target === e.currentTarget && zoom.current?.close()}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt="The QR image you gave, full size" />
-          <button className="img-zoom-close" type="button" onClick={() => zoom.current?.close()} aria-label="Close">
+          <img src={preview} alt={t("The QR image you gave, full size")} />
+          <button className="img-zoom-close" type="button" onClick={() => zoom.current?.close()} aria-label={t("Close")}>
             ✕
           </button>
         </dialog>
@@ -379,10 +383,10 @@ function KhqrView({ r, preview }: { r: KhqrResult; preview: string | null }) {
 
       <div className="khqr-raw">
         <div className="khqr-raw-head">
-          <b>Raw data</b>
+          <b>{t("Raw data")}</b>
           <CopyButton text={r.raw} targetId="khqrRaw" />
-          <button className="mini-tool" type="button" onClick={() => setTech((t) => !t)}>
-            {tech ? "Hide" : "Show"} technical details
+          <button className="mini-tool" type="button" onClick={() => setTech((v) => !v)}>
+            {t(tech ? "Hide technical details" : "Show technical details")}
           </button>
         </div>
         <code id="khqrRaw">{r.raw}</code>
@@ -393,25 +397,26 @@ function KhqrView({ r, preview }: { r: KhqrResult; preview: string | null }) {
 }
 
 function TlvTable({ items, depth = 0 }: { items: Tlv[]; depth?: number }) {
+  const { t } = useLang();
   return (
     <table className={`tlv${depth ? " sub" : ""}`}>
       {!depth && (
         <thead>
           <tr>
-            <th>Tag</th>
-            <th>Name</th>
-            <th>Len</th>
-            <th>Value</th>
+            <th>{t("Tag")}</th>
+            <th>{t("Name")}</th>
+            <th>{t("Len")}</th>
+            <th>{t("Value")}</th>
           </tr>
         </thead>
       )}
       <tbody>
-        {items.map((t, i) => (
-          <tr key={`${t.tag}-${i}`}>
-            <td>{t.tag}</td>
-            <td>{t.label}</td>
-            <td>{t.length}</td>
-            <td>{t.children?.length ? <TlvTable items={t.children} depth={depth + 1} /> : t.value}</td>
+        {items.map((it, i) => (
+          <tr key={`${it.tag}-${i}`}>
+            <td>{it.tag}</td>
+            <td>{t(it.label)}</td>
+            <td>{it.length}</td>
+            <td>{it.children?.length ? <TlvTable items={it.children} depth={depth + 1} /> : it.value}</td>
           </tr>
         ))}
       </tbody>

@@ -5,6 +5,7 @@ import BlinkingPhone from "./BlinkingPhone";
 import PixelSprite from "./PixelSprite";
 import { BUBBLE, BUBBLE_PAL } from "@/lib/sprites";
 import { apps, profile } from "@/data/profile";
+import { useLang } from "@/lib/i18n";
 
 type Msg = { id: number; who: "bot" | "me"; text: string };
 type Field = "name" | "email" | "message";
@@ -12,13 +13,14 @@ type Field = "name" | "email" | "message";
 const EMAIL = /^\S+@\S+\.\S+$/;
 const TELEGRAM = /^@?[A-Za-z][A-Za-z0-9_]{4,31}$/;
 // Where Daro's reply will go, in words the visitor recognises.
-const replyWhere = (c: string) => (EMAIL.test(c) ? `by email to ${c}` : `on Telegram to @${c.replace(/^@/, "")}`);
+const replyWhere = (c: string) => (EMAIL.test(c) ? { how: "email", to: c } : { how: "telegram", to: `@${c.replace(/^@/, "")}` });
 
 const HIRING = "Hi Daro, I'm hiring for an Android / Flutter role and would like to talk. ";
 
 // Floating message button (bottom-left) with a chat-style panel.
 // Messages are sent to /api/message, which forwards them to Daro's Telegram.
 export default function ChatWidget() {
+  const { t } = useLang();
   const [visible, setVisible] = useState(false);
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -97,7 +99,7 @@ export default function ChatWidget() {
     setTimeout(() => nameInput.current?.focus(), 320);
     if (greeted.current) return;
     greeted.current = true;
-    await botSay("Hi! I'm Dororo. Leave a message and Daro will reply to you.", 500);
+    await botSay(t("Hi! I'm Dororo. Leave a message and Daro will reply to you."), 500);
     setShowChips(true);
   };
 
@@ -110,8 +112,8 @@ export default function ChatWidget() {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeChat();
     const onDown = (e: PointerEvent) => {
-      const t = e.target as Node;
-      if (!panel.current?.contains(t) && !fab.current?.contains(t)) closeChat();
+      const target = e.target as Node;
+      if (!panel.current?.contains(target) && !fab.current?.contains(target)) closeChat();
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onDown);
@@ -122,8 +124,8 @@ export default function ChatWidget() {
   }, [open, closeChat]);
 
   const copyEmail = () => {
-    const done = () => botSay(`Copied ${profile.email} to your clipboard.`, 350);
-    const fallback = () => botSay(`Daro's email is ${profile.email}`, 350);
+    const done = () => botSay(t("Copied {email} to your clipboard.", { email: profile.email }), 350);
+    const fallback = () => botSay(t("Daro's email is {email}", { email: profile.email }), 350);
     try {
       navigator.clipboard.writeText(profile.email).then(done, fallback);
     } catch {
@@ -132,7 +134,7 @@ export default function ChatWidget() {
   };
 
   const hiring = () => {
-    setForm((f) => ({ ...f, message: HIRING }));
+    setForm((f) => ({ ...f, message: t(HIRING) }));
     setTimeout(() => {
       const el = msgInput.current;
       if (!el) return;
@@ -151,7 +153,7 @@ export default function ChatWidget() {
     if (form.message.trim().length < 2) bad.push("message");
     setInvalid(bad);
     if (bad.length) {
-      setError(bad[0] === "email" ? "Add an email or Telegram @username so Daro can reply." : "Please fill in your name and a message.");
+      setError(bad[0] === "email" ? t("Add an email or Telegram @username so Daro can reply.") : t("Please fill in your name and a message."));
       return;
     }
     setError("");
@@ -168,9 +170,10 @@ export default function ChatWidget() {
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean };
       if (!res.ok || !data.ok) throw new Error("not sent");
       setForm((f) => ({ ...f, message: "" }));
-      await botSay(`Sent! Thanks, ${first}. Daro will reply ${replyWhere(contact)}.`, 700);
+      const r = replyWhere(contact);
+      await botSay(t(r.how === "email" ? "Sent! Thanks, {name}. Daro will reply by email to {to}." : "Sent! Thanks, {name}. Daro will reply on Telegram to {to}.", { name: first, to: r.to }), 700);
     } catch {
-      await botSay(`Sorry, that didn't send. Please email Daro at ${profile.email} instead.`, 500);
+      await botSay(t("Sorry, that didn't send. Please email Daro at {email} instead.", { email: profile.email }), 500);
     } finally {
       setSending(false);
     }
@@ -188,7 +191,7 @@ export default function ChatWidget() {
         ref={fab}
         className={`chat-fab${visible || open ? " show" : ""}`}
         type="button"
-        aria-label="Message Daro"
+        aria-label={t("Message Daro")}
         aria-expanded={open}
         aria-controls="chatPanel"
         onClick={() => (open ? closeChat() : openChat())}
@@ -209,9 +212,9 @@ export default function ChatWidget() {
           </span>
           <div className="chat-who">
             <b id="chatTitle">DORORO</b>
-            <span>Usually replies within a day</span>
+            <span>{t("Usually replies within a day")}</span>
           </div>
-          <button className="chat-x" type="button" aria-label="Close messages" onClick={closeChat}>
+          <button className="chat-x" type="button" aria-label={t("Close messages")} onClick={closeChat}>
             ✕
           </button>
         </header>
@@ -223,7 +226,7 @@ export default function ChatWidget() {
             </div>
           ))}
           {typing && (
-            <div className="msg bot typing" aria-label="Dororo is typing">
+            <div className="msg bot typing" aria-label={t("Dororo is typing")}>
               <i />
               <i />
               <i />
@@ -232,13 +235,13 @@ export default function ChatWidget() {
           {showChips && (
             <div className="chips">
               <button className="chip-btn" type="button" onClick={copyEmail}>
-                Copy email
+                {t("Copy email")}
               </button>
               <a className="chip-btn" href={profile.linkedin.url} target="_blank" rel="noopener noreferrer">
                 LinkedIn ↗
               </a>
               <button className="chip-btn" type="button" onClick={hiring}>
-                I&apos;m hiring
+                {t("I'm hiring")}
               </button>
             </div>
           )}
@@ -246,12 +249,12 @@ export default function ChatWidget() {
 
         <form className="chat-form" onSubmit={submit} noValidate>
           <div className="chat-row">
-            <input ref={nameInput} id="chatName" type="text" placeholder="Your name" autoComplete="name" aria-label="Your name" maxLength={80} {...field("name")} />
-            <input id="chatEmail" type="text" inputMode="email" placeholder="Email or Telegram @username" autoComplete="email" aria-label="Email or Telegram username, for Daro's reply" maxLength={120} {...field("email")} />
+            <input ref={nameInput} id="chatName" type="text" placeholder={t("Your name")} autoComplete="name" aria-label={t("Your name")} maxLength={80} {...field("name")} />
+            <input id="chatEmail" type="text" inputMode="email" placeholder={t("Email or Telegram @username")} autoComplete="email" aria-label={t("Email or Telegram username, for Daro's reply")} maxLength={120} {...field("email")} />
           </div>
           <div className="chat-interest" role="group" aria-labelledby="interestLabel">
             <span className="chat-interest-label" id="interestLabel">
-              Interested in <small>(optional)</small>
+              {t("Interested in")} <small>{t("(optional)")}</small>
             </span>
             <div className="interest-row">
               {apps.map((a) => (
@@ -268,7 +271,7 @@ export default function ChatWidget() {
               ))}
             </div>
           </div>
-          <textarea ref={msgInput} id="chatMsg" placeholder="Write your message…" aria-label="Message" maxLength={2000} {...field("message")} />
+          <textarea ref={msgInput} id="chatMsg" placeholder={t("Write your message…")} aria-label={t("Message")} maxLength={2000} {...field("message")} />
           {/* Hidden from people; bots fill it in and get ignored. */}
           <input
             className="chat-hp"
@@ -282,9 +285,9 @@ export default function ChatWidget() {
             {error}
           </p>
           <div className="chat-send">
-            <small>Daro replies to you there</small>
+            <small>{t("Daro replies to you there")}</small>
             <button className="btn btn-gold" type="submit" disabled={sending}>
-              {sending ? "Sending…" : "Send ▶"}
+              {sending ? t("Sending…") : t("Send ▶")}
             </button>
           </div>
         </form>

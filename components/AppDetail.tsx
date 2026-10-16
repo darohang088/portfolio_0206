@@ -1,14 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import ScreenGallery from "./ScreenGallery";
 import type { AppItem } from "@/data/profile";
+import { useContent } from "@/lib/i18n/content";
+import { useLang } from "@/lib/i18n";
 
-export default function AppDetail({ app }: { app: AppItem }) {
+export default function AppDetail({ app: base }: { app: AppItem }) {
+  const { apps } = useContent();
+  const { t } = useLang();
+  const app = apps.find((a) => a.slug === base.slug) ?? base;
   return (
     <main className="app-page">
       <section className="block app-detail">
         <div className="wrap">
           <Link className="back" href="/#apps">
-            ◀ Back to My App
+            {t("◀ Back to My App")}
           </Link>
           <div className="app-hero">
             <div className="app-hero-stage" aria-hidden="true">
@@ -16,7 +23,7 @@ export default function AppDetail({ app }: { app: AppItem }) {
               <span className="app-hero-shadow" />
             </div>
             <div className="app-hero-text">
-              <p className="eyebrow">My App</p>
+              <p className="eyebrow">{t("My App")}</p>
               <h1 className="app-title" style={{ "--len": app.name.length } as React.CSSProperties}>
                 {app.name}
               </h1>
@@ -33,9 +40,9 @@ export default function AppDetail({ app }: { app: AppItem }) {
 
           <div className="app-info">
             <div className="app-about">
-              <h2>About {app.name}</h2>
-              {app.description.map((p) => (
-                <p className="lede" key={p}>
+              <h2>{t("About {name}", { name: app.name })}</h2>
+              {app.description.map((p, i) => (
+                <p className="lede" key={i}>
                   {p}
                 </p>
               ))}
@@ -50,8 +57,8 @@ export default function AppDetail({ app }: { app: AppItem }) {
               )}
             </div>
             <dl className="app-facts">
-              {app.facts.map((f) => (
-                <div key={f.label}>
+              {app.facts.map((f, i) => (
+                <div key={i}>
                   <dt>{f.label}</dt>
                   <dd>{f.value}</dd>
                 </div>
@@ -61,17 +68,17 @@ export default function AppDetail({ app }: { app: AppItem }) {
 
           {app.screens.length > 0 && (
             <div className="app-block">
-              <h2>Screens</h2>
+              <h2>{t("Screens")}</h2>
               <ScreenGallery screens={app.screens} />
             </div>
           )}
 
           {app.features.length > 0 && (
             <div className="app-block">
-              <h2>What you can do</h2>
+              <h2>{t("What you can do")}</h2>
               <div className="features">
-                {app.features.map((f) => (
-                  <div className="feature" key={f.title}>
+                {app.features.map((f, i) => (
+                  <div className="feature" key={i}>
                     <h3>{f.title}</h3>
                     <p>{f.text}</p>
                   </div>

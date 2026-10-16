@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import DeviceTester from "./DeviceTester";
+import { useLang } from "@/lib/i18n";
 import { testProjects, type TestProject } from "@/data/testProjects";
 
 const LEN = 4;
@@ -14,6 +15,7 @@ async function sha256(text: string) {
 // The Test page: it always opens on the list of apps to test. Tap one and enter its PIN
 // (asked every time), then use the phone preview.
 export default function TestProjects() {
+  const { t } = useLang();
   const [open, setOpen] = useState<TestProject | null>(null);
   const [unlocked, setUnlocked] = useState<TestProject | null>(null);
 
@@ -35,11 +37,11 @@ export default function TestProjects() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={unlocked.logo} alt="" width={48} height={48} />
           <div>
-            <h3>{unlocked.name}</h3>
-            <p>Press Render to see it at 393 × 852, the screen size of an iPhone 15 or 16.</p>
+            <h3>{t(unlocked.name)}</h3>
+            <p>{t("Press Render to see it at 393 × 852, the screen size of an iPhone 15 or 16.")}</p>
           </div>
           <button className="mini-tool" type="button" onClick={lock}>
-            ← All projects
+            {t("← All projects")}
           </button>
         </div>
         <DeviceTester fixedUrl={unlocked.url} />
@@ -56,16 +58,16 @@ export default function TestProjects() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.logo} alt="" width={72} height={72} />
               <span className="test-card-body">
-                <b>{p.name}</b>
-                <span>{p.description}</span>
+                <b>{t(p.name)}</b>
+                <span>{t(p.description)}</span>
                 <span className="test-tags">
-                  {p.tags.map((t) => (
-                    <i key={t}>{t}</i>
+                  {p.tags.map((tag) => (
+                    <i key={tag}>{t(tag)}</i>
                   ))}
                 </span>
               </span>
               <span className="test-lock" aria-hidden="true">
-                🔒 Enter PIN
+                {t("🔒 Enter PIN")}
               </span>
             </button>
           </li>
@@ -77,6 +79,7 @@ export default function TestProjects() {
 }
 
 function PinDialog({ project, onClose, onUnlock }: { project: TestProject; onClose: () => void; onUnlock: () => void }) {
+  const { t } = useLang();
   const [digits, setDigits] = useState<string[]>(Array(LEN).fill(""));
   const [error, setError] = useState("");
   const [shake, setShake] = useState(0);
@@ -98,7 +101,7 @@ function PinDialog({ project, onClose, onUnlock }: { project: TestProject; onClo
       setOk(true);
       setTimeout(onUnlock, 450);
     } else {
-      setError("Wrong PIN. Try again.");
+      setError(t("Wrong PIN. Try again."));
       setShake((n) => n + 1);
       setDigits(Array(LEN).fill(""));
     }
@@ -141,8 +144,8 @@ function PinDialog({ project, onClose, onUnlock }: { project: TestProject; onClo
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={project.logo} alt="" width={56} height={56} />
-      <h3 id="pinTitle">{project.name}</h3>
-      <p>Enter the 4-digit PIN to open this project.</p>
+      <h3 id="pinTitle">{t(project.name)}</h3>
+      <p>{t("Enter the 4-digit PIN to open this project.")}</p>
       <form
         className={`pin-boxes${error ? " bad" : ""}${ok ? " good" : ""}`}
         key={shake}
@@ -161,7 +164,7 @@ function PinDialog({ project, onClose, onUnlock }: { project: TestProject; onClo
             inputMode="numeric"
             autoComplete="one-time-code"
             maxLength={LEN}
-            aria-label={`PIN digit ${i + 1}`}
+            aria-label={t("PIN digit {n}", { n: i + 1 })}
             value={d}
             onChange={(e) => put(i, e.target.value)}
             onKeyDown={(e) => onKey(i, e)}
@@ -170,10 +173,10 @@ function PinDialog({ project, onClose, onUnlock }: { project: TestProject; onClo
         ))}
       </form>
       <p className="pin-msg" role="alert">
-        {ok ? "✓ Unlocked" : error}
+        {ok ? t("✓ Unlocked") : error}
       </p>
       <button className="mini-tool" type="button" onClick={() => dlg.current?.close()}>
-        Cancel
+        {t("Cancel")}
       </button>
     </dialog>
   );

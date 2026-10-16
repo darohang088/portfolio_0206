@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/Nav";
+import PageHead from "@/components/PageHead";
 import ApkAnalyzer from "@/components/ApkAnalyzer";
 import Footer from "@/components/Footer";
 import ClickSparks from "@/components/ClickSparks";
@@ -17,14 +18,7 @@ export default function ApkPage() {
       <main>
         <section className="block">
           <div className="wrap">
-            <a className="back-link" href="/tools">
-              ← All tools
-            </a>
-            <div className="head">
-              <p className="eyebrow">Tools · APK</p>
-              <h2>APK security check</h2>
-              <p className="lede">Drop an Android APK to see how secure it is: debug settings, network, exported screens, signing, permissions and hardcoded secrets.</p>
-            </div>
+            <PageHead back eyebrow="Tools · APK" title="APK security check" lede="Drop an Android APK to see how secure it is: debug settings, network, exported screens, signing, permissions and hardcoded secrets." />
             <ApkAnalyzer />
           </div>
         </section>

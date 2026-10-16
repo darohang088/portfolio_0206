@@ -7,6 +7,9 @@ export default function TypedLine({ text }: { text: string }) {
   const ref = useRef<HTMLParagraphElement>(null);
   const [shown, setShown] = useState(text);
 
+  // Language switch: show the new text right away.
+  useEffect(() => setShown(text), [text]);
+
   useEffect(() => {
     const el = ref.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;

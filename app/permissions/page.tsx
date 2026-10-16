@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/Nav";
+import PageHead from "@/components/PageHead";
 import PrivacyExplainer from "@/components/PrivacyExplainer";
 import Footer from "@/components/Footer";
 import ClickSparks from "@/components/ClickSparks";
@@ -17,17 +18,7 @@ export default function Page() {
       <main>
         <section className="block">
           <div className="wrap">
-            <a className="back-link" href="/tools">
-              ← All tools
-            </a>
-            <div className="head">
-              <p className="eyebrow">Tools · Permissions</p>
-              <h2>Permissions &amp; privacy explainer</h2>
-              <p className="lede">
-                Drop your AndroidManifest.xml or APK to see which permissions Google Play will question, the declarations Play Console asks for, where you need a prominent
-                disclosure, and what gets apps rejected.
-              </p>
-            </div>
+            <PageHead back eyebrow="Tools · Permissions" title="Permissions & privacy explainer" lede="Drop your AndroidManifest.xml or APK to see which permissions Google Play will question, the declarations Play Console asks for, where you need a prominent disclosure, and what gets apps rejected." />
             <PrivacyExplainer />
           </div>
         </section>

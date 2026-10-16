@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { profile, skillKinds } from "@/data/profile";
+import { useLang } from "@/lib/i18n";
 
 const VISIBLE = 3;
 
@@ -9,6 +10,7 @@ const VISIBLE = 3;
 export default function RoleSkills({ skills, total }: { skills: string[]; total?: number }) {
   const [open, setOpen] = useState(false);
   const id = useId();
+  const { t } = useLang();
   const hidden = skills.length - VISIBLE;
   const shown = open || hidden <= 0 ? skills : skills.slice(0, VISIBLE);
   const unlisted = total ? total - skills.length : 0;
@@ -22,17 +24,17 @@ export default function RoleSkills({ skills, total }: { skills: string[]; total?
           style={{ "--d": i - VISIBLE } as React.CSSProperties}
           key={s}
         >
-          {s}
+          {t(s)}
         </span>
       ))}
       {hidden > 0 && (
         <button className="more-btn" aria-expanded={open} aria-controls={id} onClick={() => setOpen((o) => !o)}>
-          {open ? "Show less" : `+${hidden} skills`}
+          {open ? t("Show less") : t("+{n} skills", { n: hidden })}
         </button>
       )}
       {unlisted > 0 && (
         <a className="more-btn" href={profile.linkedin.url} target="_blank" rel="noopener noreferrer">
-          +{unlisted} skills on LinkedIn ↗
+          {t("+{n} skills on LinkedIn ↗", { n: unlisted })}
         </a>
       )}
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "@/lib/i18n";
 import { useState } from "react";
 import type { Change, Component, ManifestDiff, ManifestSummary } from "@/lib/apk/manifest";
 
@@ -8,6 +9,7 @@ const SIGN = { added: "+", removed: "−", changed: "~", same: "=" } as const;
 
 // Manifest diff: drop the old and new APK (or AndroidManifest.xml) and see what changed.
 export default function ApkDiff() {
+  const { t } = useLang();
   const [a, setA] = useState<ManifestSummary | null>(null);
   const [b, setB] = useState<ManifestSummary | null>(null);
   const [err, setErr] = useState("");
@@ -27,7 +29,7 @@ export default function ApkDiff() {
       slot === "a" ? setA(s) : setB(s);
       setDiff(na && nb ? diffManifests(na, nb) : null);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Couldn't read that file.");
+      setErr(t(e instanceof Error ? e.message : "Couldn't read that file."));
     } finally {
       setBusy(null);
     }
@@ -43,22 +45,23 @@ export default function ApkDiff() {
   return (
     <div className="qr-tool">
       <div className="diff-slots">
-        <Slot label="Old version" tag="A" s={a} busy={busy === "a"} onFile={(f) => load("a", f)} />
-        <button className="mini-tool diff-swap" type="button" onClick={swap} disabled={!a && !b} aria-label="Swap old and new">
+        <Slot label={t("Old version")} tag="A" s={a} busy={busy === "a"} onFile={(f) => load("a", f)} />
+        <button className="mini-tool diff-swap" type="button" onClick={swap} disabled={!a && !b} aria-label={t("Swap old and new")}>
           ⇄
         </button>
-        <Slot label="New version" tag="B" s={b} busy={busy === "b"} onFile={(f) => load("b", f)} />
+        <Slot label={t("New version")} tag="B" s={b} busy={busy === "b"} onFile={(f) => load("b", f)} />
       </div>
       <p className="tester-err" role="alert">
         {err}
       </p>
       {diff && a && b && <Report d={diff} a={a} b={b} showSame={showSame} setShowSame={setShowSame} />}
-      <p className="apk-private fp-private">🔒 Compared in your browser. Nothing is uploaded.</p>
+      <p className="apk-private fp-private">{t("🔒 Compared in your browser. Nothing is uploaded.")}</p>
     </div>
   );
 }
 
 function Slot({ label, tag, s, busy, onFile }: { label: string; tag: string; s: ManifestSummary | null; busy: boolean; onFile: (f: File | undefined) => void }) {
+  const { t } = useLang();
   const [drag, setDrag] = useState(false);
   return (
     <label
@@ -83,13 +86,14 @@ function Slot({ label, tag, s, busy, onFile }: { label: string; tag: string; s: 
         }}
       />
       <span className="diff-tag">{tag}</span>
-      <b>{busy ? "Reading…" : s ? s.fileName : label}</b>
-      <span>{s ? `${s.packageName} · v${s.versionName} (${s.versionCode}) · ${s.source}` : "Drop an .apk or AndroidManifest.xml"}</span>
+      <b>{busy ? t("Reading…") : s ? s.fileName : label}</b>
+      <span>{s ? `${s.packageName} · v${s.versionName} (${s.versionCode}) · ${s.source}` : t("Drop an .apk or AndroidManifest.xml")}</span>
     </label>
   );
 }
 
 function Report({ d, a, b, showSame, setShowSame }: { d: ManifestDiff; a: ManifestSummary; b: ManifestSummary; showSame: boolean; setShowSame: (v: boolean) => void }) {
+  const { t } = useLang();
   const count = (list: Change<unknown>[], st: Change["status"]) => list.filter((c) => c.status === st).length;
   const newlyExported = d.components.filter((c) => (c.status === "added" && c.item.exported && !c.item.permission) || (c.status === "changed" && c.after === "exported"));
   const addedDanger = d.permissions.filter((p) => p.status === "added" && DANGEROUS.test(p.item));
@@ -98,45 +102,47 @@ function Report({ d, a, b, showSame, setShowSame }: { d: ManifestDiff; a: Manife
   return (
     <section className="diff-report">
       <div className="khqr-badges">
-        <span className="sev sev-pass">+{count(d.permissions, "added")} permissions</span>
-        <span className="sev sev-high">−{count(d.permissions, "removed")} permissions</span>
+        <span className="sev sev-pass">{t("+{n} permissions", { n: count(d.permissions, "added") })}</span>
+        <span className="sev sev-high">{t("−{n} permissions", { n: count(d.permissions, "removed") })}</span>
         <span className="sev sev-info">
-          {count(d.components, "added")} new · {count(d.components, "removed")} removed components
+          {t("{a} new · {r} removed components", { a: count(d.components, "added"), r: count(d.components, "removed") })}
         </span>
-        {newlyExported.length > 0 && <span className="sev sev-medium">{newlyExported.length} newly exported</span>}
-        {addedDanger.length > 0 && <span className="sev sev-medium">{addedDanger.length} new sensitive permission{addedDanger.length > 1 ? "s" : ""}</span>}
+        {newlyExported.length > 0 && <span className="sev sev-medium">{t("{n} newly exported", { n: newlyExported.length })}</span>}
+        {addedDanger.length > 0 && <span className="sev sev-medium">{t(addedDanger.length > 1 ? "{n} new sensitive permissions" : "{n} new sensitive permission", { n: addedDanger.length })}</span>}
       </div>
 
       {d.signerChanged === true && (
         <p className="diff-alert">
-          ⚠ <b>Different signing key.</b> Android won&apos;t install B as an update over A. Old: {a.signer?.sha256.slice(0, 23)}… New: {b.signer?.sha256.slice(0, 23)}…
+          ⚠ <b>{t("Different signing key.")}</b>{" "}
+          {t("Android won't install B as an update over A. Old: {old}… New: {new}…", { old: a.signer?.sha256.slice(0, 23) ?? "", new: b.signer?.sha256.slice(0, 23) ?? "" })}
         </p>
       )}
-      {d.signerChanged === false && <p className="diff-ok">✓ Same signing key ({b.signer?.subject})</p>}
+      {d.signerChanged === false && <p className="diff-ok">✓ {t("Same signing key")} ({b.signer?.subject})</p>}
 
       <label className="diff-same">
-        <input type="checkbox" checked={showSame} onChange={(e) => setShowSame(e.target.checked)} /> Show unchanged items
+        <input type="checkbox" checked={showSame} onChange={(e) => setShowSame(e.target.checked)} /> {t("Show unchanged items")}
       </label>
 
-      <DiffTable title="App" rows={filter(d.info).concat(filter(d.flags))} />
-      <DiffTable title="Permissions" rows={filter(d.permissions)} danger />
+      <DiffTable title={t("App")} rows={filter(d.info).concat(filter(d.flags))} />
+      <DiffTable title={t("Permissions")} rows={filter(d.permissions)} danger />
       <DiffTable
-        title="Components"
+        title={t("Components")}
         rows={filter(d.components).map((c) => ({
           ...c,
-          item: `${c.item.kind} · ${c.item.name}${c.status === "added" || c.status === "removed" || c.status === "same" ? (c.item.exported ? (c.item.permission ? " (exported, protected)" : " (exported)") : "") : ""}`,
+          item: `${c.item.kind} · ${c.item.name}${c.status === "added" || c.status === "removed" || c.status === "same" ? (c.item.exported ? (c.item.permission ? t(" (exported, protected)") : t(" (exported)")) : "") : ""}`,
         }))}
       />
-      {(d.features.some((f) => f.status !== "same") || showSame) && <DiffTable title="Hardware features" rows={filter(d.features)} />}
+      {(d.features.some((f) => f.status !== "same") || showSame) && <DiffTable title={t("Hardware features")} rows={filter(d.features)} />}
     </section>
   );
 }
 
 function DiffTable({ title, rows, danger }: { title: string; rows: Change<string | Component>[]; danger?: boolean }) {
+  const { t } = useLang();
   return (
     <div className="diff-table">
       <h3>
-        {title} <small>{rows.length ? `${rows.length} shown` : "no changes"}</small>
+        {title} <small>{rows.length ? t("{n} shown", { n: rows.length }) : t("no changes")}</small>
       </h3>
       {rows.length > 0 && (
         <ul>
@@ -148,8 +154,8 @@ function DiffTable({ title, rows, danger }: { title: string; rows: Change<string
                   {SIGN[r.status]}
                 </span>
                 <span className="d-item">
-                  {label.replace("android.permission.", "")}
-                  {danger && r.status === "added" && DANGEROUS.test(label) && <em> sensitive</em>}
+                  {t(label.replace("android.permission.", ""))}
+                  {danger && r.status === "added" && DANGEROUS.test(label) && <em> {t("sensitive")}</em>}
                 </span>
                 {r.status === "changed" && (
                   <span className="d-change">

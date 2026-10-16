@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/Nav";
+import PageHead from "@/components/PageHead";
 import ApkDiff from "@/components/ApkDiff";
 import Footer from "@/components/Footer";
 import ClickSparks from "@/components/ClickSparks";
@@ -17,14 +18,7 @@ export default function Page() {
       <main>
         <section className="block">
           <div className="wrap">
-            <a className="back-link" href="/tools">
-              ← All tools
-            </a>
-            <div className="head">
-              <p className="eyebrow">Tools · Manifest Diff</p>
-              <h2>Manifest & permissions diff</h2>
-              <p className="lede">Drop two versions of your app to see added or removed permissions, newly exported components, SDK changes and whether the signing key changed.</p>
-            </div>
+            <PageHead back eyebrow="Tools · Manifest Diff" title="Manifest & permissions diff" lede="Drop two versions of your app to see added or removed permissions, newly exported components, SDK changes and whether the signing key changed." />
             <ApkDiff />
           </div>
         </section>

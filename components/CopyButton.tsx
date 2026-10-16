@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 export default function CopyButton({ text, targetId }: { text: string; targetId: string }) {
+  const { t } = useLang();
   const [label, setLabel] = useState("Copy");
 
   const flash = (l: string) => {
@@ -32,7 +34,7 @@ export default function CopyButton({ text, targetId }: { text: string; targetId:
 
   return (
     <button className="mini" type="button" onClick={onClick}>
-      {label}
+      {t(label)}
     </button>
   );
 }

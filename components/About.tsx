@@ -1,14 +1,17 @@
-import { profile, stats } from "@/data/profile";
+"use client";
+
+import { useContent } from "@/lib/i18n/content";
+import { useLang } from "@/lib/i18n";
 
 export default function About() {
+  const { profile, stats } = useContent();
+  const { t, tr } = useLang();
   return (
     <section className="block intro" id="about">
       <div className="wrap">
         <div data-reveal>
-          <p className="eyebrow">Player profile</p>
-          <h2>
-            Explore <em>6+ years</em> of Android apps people use every day
-          </h2>
+          <p className="eyebrow">{t("Player profile")}</p>
+          <h2>{tr("Explore {years} of Android apps people use every day", { years: <em>{t("6+ years")}</em> })}</h2>
           <p className="lede">{profile.summary}</p>
         </div>
         <div className="stats" data-reveal>
