@@ -79,29 +79,37 @@ export function summarize(root: XmlNode, fileName: string, source: ManifestSumma
   };
 }
 
-export async function readManifest(file: File): Promise<ManifestSummary> {
-  const bytes = new Uint8Array(await file.arrayBuffer());
+// Read the manifest tree from an APK, a binary AndroidManifest.xml or a plain-text one.
+export function loadManifestRoot(bytes: Uint8Array, name: string): { root: XmlNode; source: ManifestSummary["source"] } {
   if (bytes[0] === 0x50 && bytes[1] === 0x4b) {
     const files = unzipSync(bytes, { filter: (f) => f.name === "AndroidManifest.xml" });
     const m = files["AndroidManifest.xml"];
-    if (!m) throw new Error(`${file.name}: no AndroidManifest.xml inside. Is this an APK?`);
+    if (!m) throw new Error(`${name}: no AndroidManifest.xml inside. Is this an APK?`);
     const root = parseAxml(m);
-    if (!root) throw new Error(`${file.name}: couldn't read its manifest.`);
-    const s = summarize(root, file.name, "APK");
+    if (!root) throw new Error(`${name}: couldn't read its manifest.`);
+    return { root, source: "APK" };
+  }
+  if (bytes[0] === 0x03 && bytes[1] === 0x00) {
+    const root = parseAxml(bytes);
+    if (!root) throw new Error(`${name}: couldn't read this binary manifest.`);
+    return { root, source: "Binary manifest" };
+  }
+  const root = textXml(new TextDecoder().decode(bytes));
+  if (!root || root.name !== "manifest") throw new Error(`${name}: drop an .apk or an AndroidManifest.xml.`);
+  return { root, source: "Source manifest" };
+}
+
+export async function readManifest(file: File): Promise<ManifestSummary> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const { root, source } = loadManifestRoot(bytes, file.name);
+  const s = summarize(root, file.name, source);
+  if (source === "APK") {
     try {
       const { certs } = await findCertificates(bytes);
       if (certs[0]) s.signer = { subject: certs[0].subject, sha256: certs[0].sha256 };
     } catch {}
-    return s;
   }
-  if (bytes[0] === 0x03 && bytes[1] === 0x00) {
-    const root = parseAxml(bytes);
-    if (!root) throw new Error(`${file.name}: couldn't read this binary manifest.`);
-    return summarize(root, file.name, "Binary manifest");
-  }
-  const root = textXml(new TextDecoder().decode(bytes));
-  if (!root || root.name !== "manifest") throw new Error(`${file.name}: drop an .apk or an AndroidManifest.xml.`);
-  return summarize(root, file.name, "Source manifest");
+  return s;
 }
 
 // ---------- comparing ----------

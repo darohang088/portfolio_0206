@@ -14,6 +14,13 @@ export const toolGroups: ToolGroup[] = [
         tags: ["Signing", "Firebase", "Free"],
       },
       {
+        href: "/permissions",
+        icon: "📋",
+        name: "Permissions & Privacy Explainer",
+        description: "Drop an AndroidManifest.xml or APK. See which permissions Google Play will question, the Play Console declarations you need, where a prominent disclosure is required, and what gets apps rejected.",
+        tags: ["Google Play", "Privacy", "Free"],
+      },
+      {
         href: "/apk-diff",
         icon: "🆚",
         name: "Manifest & Permissions Diff",
