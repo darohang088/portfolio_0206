@@ -2,7 +2,7 @@
 
 import type { AppInfo } from "@/lib/apk/appInfo";
 
-export const MAX_APK = 95 * 1024 * 1024; // keep in sync with worker/builds.ts
+export const MAX_APK = 150 * 1024 * 1024; // keep in sync with worker/builds.ts
 export const EXPIRY_DAYS = [1, 3, 7] as const;
 
 export type Build = Omit<AppInfo, "icon"> & {
@@ -60,13 +60,14 @@ export async function api<T>(path: string, secret: string | null, init: RequestI
   return { status: res.status, data };
 }
 
-// Upload with progress (fetch can't report upload progress, XMLHttpRequest can).
-export function uploadApk(id: string, file: File, secret: string, onProgress: (sent: number) => void): Promise<{ ok: boolean; url?: string; error?: string }> {
+// Upload the APK in parts (each well under the Worker's 100 MB request limit), with progress.
+// fetch can't report upload progress, XMLHttpRequest can.
+function sendPart(id: string, n: number, blob: Blob, secret: string, onProgress: (sent: number) => void): Promise<{ ok: boolean; etag?: string; partNumber?: number; error?: string }> {
   return new Promise((resolve) => {
     const x = new XMLHttpRequest();
-    x.open("PUT", `/api/builds/${id}/apk`);
+    x.open("PUT", `/api/builds/${id}/part?n=${n}`);
     x.setRequestHeader("authorization", `Bearer ${secret}`);
-    x.setRequestHeader("content-type", "application/vnd.android.package-archive");
+    x.setRequestHeader("content-type", "application/octet-stream");
     x.upload.onprogress = (e) => onProgress(e.loaded);
     x.onload = () => {
       try {
@@ -76,8 +77,21 @@ export function uploadApk(id: string, file: File, secret: string, onProgress: (s
       }
     };
     x.onerror = () => resolve({ ok: false, error: "The connection dropped during the upload. Try again." });
-    x.send(file);
+    x.send(blob);
   });
+}
+
+export async function uploadApk(id: string, file: File, partSize: number, secret: string, onProgress: (sent: number) => void): Promise<{ ok: boolean; url?: string; error?: string }> {
+  const parts: { partNumber: number; etag: string }[] = [];
+  for (let n = 1, start = 0; start < file.size; n++, start += partSize) {
+    // Retry a part once if the connection drops.
+    let r = await sendPart(id, n, file.slice(start, start + partSize), secret, (sent) => onProgress(start + sent));
+    if (!r.ok) r = await sendPart(id, n, file.slice(start, start + partSize), secret, (sent) => onProgress(start + sent));
+    if (!r.ok || !r.etag) return { ok: false, error: r.error };
+    parts.push({ partNumber: n, etag: r.etag });
+  }
+  const { data } = await api<{ url: string }>(`/api/builds/${id}/complete`, secret, { method: "POST", body: JSON.stringify({ parts }) });
+  return data;
 }
 
 // "in 2 days", "in 5 hours"

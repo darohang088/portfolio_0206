@@ -89,10 +89,10 @@ export default function BuildShare() {
     setStep({ kind: "uploading", file, info, sent: 0 });
     const { icon, ...rest } = info;
     try {
-      const { status, data } = await api<{ id: string }>("/api/builds", secret, { method: "POST", body: JSON.stringify({ info: rest, icon, size: file.size, fileName: file.name, days, note }) });
+      const { status, data } = await api<{ id: string; partSize: number }>("/api/builds", secret, { method: "POST", body: JSON.stringify({ info: rest, icon, size: file.size, fileName: file.name, days, note }) });
       if (status === 401) return lock();
       if (!data.ok) throw new Error(data.error);
-      const up = await uploadApk(data.id, file, secret, (sent) => setStep({ kind: "uploading", file, info, sent }));
+      const up = await uploadApk(data.id, file, data.partSize, secret, (sent) => setStep({ kind: "uploading", file, info, sent }));
       if (!up.ok || !up.url) throw new Error(up.error);
       setStep({ kind: "done", url: up.url, info });
       setNote("");

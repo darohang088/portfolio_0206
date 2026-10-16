@@ -5,6 +5,7 @@
 //   builds/<id>.apk   the APK itself
 // Only someone with UPLOAD_SECRET (a Cloudflare secret) can upload, list or delete.
 // Builds expire after 1–7 days; expired ones are deleted on the next upload/list and by a daily cron.
+// The APK is uploaded in parts (R2 multipart upload) because a Worker request body is limited to 100 MB.
 
 export interface R2Object {
   key: string;
@@ -15,7 +16,15 @@ export interface R2ObjectBody extends R2Object {
   body: ReadableStream;
   text(): Promise<string>;
 }
+export interface R2MultipartUpload {
+  uploadId: string;
+  uploadPart(partNumber: number, value: ReadableStream): Promise<{ partNumber: number; etag: string }>;
+  complete(parts: { partNumber: number; etag: string }[]): Promise<R2Object>;
+  abort(): Promise<void>;
+}
 export interface R2Bucket {
+  createMultipartUpload(key: string, options?: { httpMetadata?: { contentType?: string } }): Promise<R2MultipartUpload>;
+  resumeMultipartUpload(key: string, uploadId: string): R2MultipartUpload;
   get(key: string): Promise<R2ObjectBody | null>;
   head(key: string): Promise<R2Object | null>;
   put(key: string, value: ReadableStream | string | null, options?: { httpMetadata?: { contentType?: string } }): Promise<R2Object | null>;
@@ -28,7 +37,8 @@ export interface BuildEnv {
   UPLOAD_SECRET?: string;
 }
 
-export const MAX_APK = 95 * 1024 * 1024; // Workers accept request bodies up to 100 MB
+export const MAX_APK = 150 * 1024 * 1024;
+export const PART_SIZE = 25 * 1024 * 1024; // each upload request stays well under the Worker's 100 MB body limit
 export const STORAGE_CAP = 5 * 1024 * 1024 * 1024; // stay at half of R2's free 10 GB
 const DAYS = [1, 3, 7];
 const PENDING_TTL = 60 * 60 * 1000; // an upload that never finished is removed after an hour
@@ -58,6 +68,7 @@ export type BuildMeta = BuildInfo & {
   expires: number;
   ready: boolean;
   downloads: number;
+  uploadId?: string; // set while the APK parts are still being uploaded
 };
 
 const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
@@ -101,7 +112,8 @@ async function readMeta(bucket: R2Bucket, id: string): Promise<BuildMeta | null>
 
 const isLive = (m: BuildMeta, now = Date.now()) => m.expires > now && (m.ready || now - m.created < PENDING_TTL);
 
-async function removeBuild(bucket: R2Bucket, id: string) {
+async function removeBuild(bucket: R2Bucket, id: string, uploadId?: string) {
+  if (uploadId) await bucket.resumeMultipartUpload(apkKey(id), uploadId).abort().catch(() => {});
   await bucket.delete([metaKey(id), apkKey(id)]);
 }
 
@@ -123,7 +135,7 @@ export async function sweep(bucket: R2Bucket): Promise<{ builds: BuildMeta[]; us
     const id = o.key.slice(7, -5);
     const m = await readMeta(bucket, id);
     if (!m || !isLive(m, now)) {
-      await removeBuild(bucket, id);
+      await removeBuild(bucket, id, m?.uploadId);
       continue;
     }
     builds.push(m);
@@ -163,7 +175,7 @@ export function cleanInfo(v: unknown): BuildInfo | null {
 
 // What testers can see: no upload state.
 const publicMeta = (m: BuildMeta) => {
-  const { ready: _ready, ...rest } = m;
+  const { ready: _ready, uploadId: _uploadId, ...rest } = m;
   return rest;
 };
 
@@ -233,6 +245,7 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
     const icon = typeof body.icon === "string" && body.icon.startsWith("data:image/png;base64,") && body.icon.length < 200_000 ? body.icon : null;
     let newKey = newId();
     while (await bucket.head(metaKey(newKey))) newKey = newId();
+    const upload = await bucket.createMultipartUpload(apkKey(newKey), { httpMetadata: { contentType: "application/vnd.android.package-archive" } });
     const now = Date.now();
     const meta: BuildMeta = {
       ...info,
@@ -245,28 +258,52 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
       expires: now + days * 24 * 60 * 60 * 1000,
       ready: false,
       downloads: 0,
+      uploadId: upload.uploadId,
     };
     await bucket.put(metaKey(newKey), JSON.stringify(meta), { httpMetadata: { contentType: "application/json" } });
-    return json({ ok: true, id: newKey });
+    return json({ ok: true, id: newKey, partSize: PART_SIZE });
   }
 
-  if (id && action === "apk" && method === "PUT") {
+  // Upload one part of the APK: PUT /api/builds/<id>/part?n=1 (parts are numbered from 1).
+  if (id && action === "part" && method === "PUT") {
     const m = await readMeta(bucket, id);
-    if (!m || m.ready) return json({ ok: false, error: "This upload was already finished or doesn't exist." }, 409);
+    if (!m || m.ready || !m.uploadId) return json({ ok: false, error: "This upload was already finished or doesn't exist." }, 409);
+    const n = Number(url.searchParams.get("n"));
     const length = Number(request.headers.get("content-length") ?? 0);
-    if (!length || length > MAX_APK || !request.body) return json({ ok: false, error: `The APK must be under ${MAX_APK / 1024 / 1024} MB.` }, 413);
-    await bucket.put(apkKey(id), request.body, { httpMetadata: { contentType: "application/vnd.android.package-archive" } });
+    if (!Number.isInteger(n) || n < 1 || n > Math.ceil(MAX_APK / PART_SIZE)) return json({ ok: false, error: "Bad part number." }, 400);
+    if (!length || length > PART_SIZE || !request.body) return json({ ok: false, error: "Bad part size." }, 413);
+    const part = await bucket.resumeMultipartUpload(apkKey(id), m.uploadId).uploadPart(n, request.body);
+    return json({ ok: true, partNumber: part.partNumber, etag: part.etag });
+  }
+
+  // Join the parts into the final APK: POST /api/builds/<id>/complete { parts: [{ partNumber, etag }] }
+  if (id && action === "complete" && method === "POST") {
+    const m = await readMeta(bucket, id);
+    if (!m || m.ready || !m.uploadId) return json({ ok: false, error: "This upload was already finished or doesn't exist." }, 409);
+    let parts: { partNumber: number; etag: string }[] = [];
+    try {
+      const body = (await request.json()) as { parts?: unknown };
+      parts = Array.isArray(body.parts) ? body.parts.filter((p): p is { partNumber: number; etag: string } => !!p && typeof p.partNumber === "number" && typeof p.etag === "string") : [];
+    } catch {}
+    if (!parts.length) return json({ ok: false, error: "Couldn't read the request." }, 400);
+    try {
+      await bucket.resumeMultipartUpload(apkKey(id), m.uploadId).complete(parts.sort((a, b) => a.partNumber - b.partNumber));
+    } catch {
+      await removeBuild(bucket, id, m.uploadId);
+      return json({ ok: false, error: "The upload was cut off. Try again." }, 400);
+    }
     const stored = await bucket.head(apkKey(id));
-    if (!stored || stored.size !== length) {
+    if (!stored || stored.size !== m.size) {
       await removeBuild(bucket, id);
       return json({ ok: false, error: "The upload was cut off. Try again." }, 400);
     }
-    await bucket.put(metaKey(id), JSON.stringify({ ...m, size: stored.size, ready: true }));
+    const { uploadId: _done, ...rest } = m;
+    await bucket.put(metaKey(id), JSON.stringify({ ...rest, ready: true }));
     return json({ ok: true, id, url: `${url.origin}/i/${id}` });
   }
 
   if (id && !action && method === "DELETE") {
-    await removeBuild(bucket, id);
+    await removeBuild(bucket, id, (await readMeta(bucket, id))?.uploadId);
     return json({ ok: true });
   }
 
