@@ -376,7 +376,7 @@ h2 em{font-style:normal;color:var(--gold-text)}
 .tester-count{display:flex;align-items:center;gap:8px;font-family:var(--f-pixel);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .tester-count input{width:84px;font-size:17px;padding:11px 10px;text-align:center}
 .tester-hint{font-size:14px;color:var(--muted)}
-.test-page .wrap{max-width:1640px}
+
 .tester-bar .btn{padding:12px 26px 14px}
 .tester-err{margin:0;min-height:1.2em;color:var(--pink);font-size:15px}
 .tester-err:empty{display:none}
