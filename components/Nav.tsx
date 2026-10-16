@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
-import ThemePicker from "./ThemePicker";
 import { profile } from "@/data/profile";
 
 const LINKS: { href: string; label: string; page?: boolean }[] = [
@@ -13,6 +12,7 @@ const LINKS: { href: string; label: string; page?: boolean }[] = [
   { href: "#blogs", label: "Blogs" },
   { href: "#contact", label: "Contact" },
   { href: "/test", label: "Test", page: true },
+  { href: "/theme", label: "Theme", page: true },
 ];
 
 // On other pages (like an app's detail page) the links point back to sections of the home page.
@@ -28,6 +28,7 @@ export default function Nav({ home = true }: { home?: boolean }) {
   useEffect(() => {
     const path = window.location.pathname;
     if (path.startsWith("/test")) return setActive("/test");
+    if (path.startsWith("/theme")) return setActive("/theme");
     if (path.startsWith("/apps")) return setActive("#apps");
     const ids = LINKS.filter((l) => !l.page).map((l) => l.href);
     let frame = 0;
@@ -100,9 +101,6 @@ export default function Nav({ home = true }: { home?: boolean }) {
               </a>
             </li>
           ))}
-          <li>
-            <ThemePicker onPick={() => setOpen(false)} />
-          </li>
         </ul>
         <div className="nav-actions">
           <ThemeToggle />
