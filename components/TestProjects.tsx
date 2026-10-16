@@ -11,35 +11,36 @@ async function sha256(text: string) {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// The Test page: a card per project; tap one, enter its PIN, then use the phone preview.
+// The Test page: it always opens on the list of apps to test. Tap one, enter its PIN
+// (only once per browser tab), then use the phone preview.
 export default function TestProjects() {
   const [open, setOpen] = useState<TestProject | null>(null);
   const [unlocked, setUnlocked] = useState<TestProject | null>(null);
+  const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
 
-  // Stay unlocked for this browser tab, so a reload doesn't ask again.
+  // Remember which apps were unlocked in this tab, so their PIN isn't asked again.
   useEffect(() => {
     try {
-      const id = sessionStorage.getItem("testUnlocked");
-      const p = testProjects.find((t) => t.id === id);
-      if (p) setUnlocked(p);
+      setUnlockedIds(JSON.parse(sessionStorage.getItem("testUnlockedIds") ?? "[]"));
     } catch {
       // Storage blocked: just ask for the PIN.
     }
   }, []);
 
   const unlock = (p: TestProject) => {
+    const ids = [...new Set([...unlockedIds, p.id])];
     try {
-      sessionStorage.setItem("testUnlocked", p.id);
+      sessionStorage.setItem("testUnlockedIds", JSON.stringify(ids));
     } catch {}
+    setUnlockedIds(ids);
     setOpen(null);
     setUnlocked(p);
     window.scrollTo({ top: 0 });
   };
 
+  const pick = (p: TestProject) => (unlockedIds.includes(p.id) ? unlock(p) : setOpen(p));
+
   const lock = () => {
-    try {
-      sessionStorage.removeItem("testUnlocked");
-    } catch {}
     setUnlocked(null);
     window.history.replaceState(null, "", window.location.pathname);
   };
@@ -68,7 +69,7 @@ export default function TestProjects() {
       <ul className="test-projects">
         {testProjects.map((p) => (
           <li key={p.id}>
-            <button type="button" className="test-card" onClick={() => setOpen(p)}>
+            <button type="button" className="test-card" onClick={() => pick(p)}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.logo} alt="" width={72} height={72} />
               <span className="test-card-body">
@@ -81,7 +82,7 @@ export default function TestProjects() {
                 </span>
               </span>
               <span className="test-lock" aria-hidden="true">
-                🔒 Enter PIN
+                {unlockedIds.includes(p.id) ? "🔓 Unlocked · Open →" : "🔒 Enter PIN"}
               </span>
             </button>
           </li>
