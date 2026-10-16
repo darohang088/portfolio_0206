@@ -10,6 +10,20 @@ export const tools: Tool[] = [
     tags: ["Android", "Security", "Free"],
   },
   {
+    href: "/khqr",
+    icon: "🔍",
+    name: "KHQR Reader",
+    description: "Read a KHQR (or any QR): upload, link, camera or paste. Shows who you pay, the amount, bank, bill number and expiry, and checks the code wasn't changed.",
+    tags: ["KHQR", "Bakong", "Free"],
+  },
+  {
+    href: "/qr",
+    icon: "🔳",
+    name: "QR Code Maker",
+    description: "Turn any text or link into a QR code with one of three frames, then download it as a PNG.",
+    tags: ["QR", "Design", "Free"],
+  },
+  {
     href: "/test",
     icon: "📱",
     name: "Test App",

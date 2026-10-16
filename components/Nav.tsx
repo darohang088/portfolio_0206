@@ -27,8 +27,8 @@ export default function Nav({ home = true }: { home?: boolean }) {
   // app's page, and on the home page whichever section has scrolled under the nav.
   useEffect(() => {
     const path = window.location.pathname;
-    // Tools and the tools inside it (APK check, Test App) all light up "Tools".
-    if (/^\/(tools|test|apk)/.test(path)) return setActive("/tools");
+    // Tools and every tool inside it light up "Tools".
+    if (/^\/(tools|test|apk|khqr|qr)(\/|$)/.test(path)) return setActive("/tools");
     if (path.startsWith("/theme")) return setActive("/theme");
     if (path.startsWith("/apps")) return setActive("#apps");
     const ids = LINKS.filter((l) => !l.page).map((l) => l.href);
