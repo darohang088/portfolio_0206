@@ -41,6 +41,7 @@ export const MAX_APK = 150 * 1024 * 1024;
 export const PART_SIZE = 25 * 1024 * 1024; // each upload request stays well under the Worker's 100 MB body limit
 export const STORAGE_CAP = 5 * 1024 * 1024 * 1024; // stay at half of R2's free 10 GB
 const DAYS = [1, 3, 7];
+export const MAX_COUNTED = 999; // downloads shown as "999+" after this
 const PENDING_TTL = 60 * 60 * 1000; // an upload that never finished is removed after an hour
 const ID_CHARS = "23456789abcdefghjkmnpqrstuvwxyz";
 
@@ -207,7 +208,8 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
     if (!m || !m.ready || !isLive(m)) return new Response("This link has expired or doesn't exist.", { status: 404 });
     const o = await bucket.get(apkKey(id));
     if (!o) return new Response("This build is no longer available.", { status: 404 });
-    if (method === "GET") waitUntil(bucket.put(metaKey(id), JSON.stringify({ ...m, downloads: (m.downloads ?? 0) + 1 })));
+    // Count downloads, but stop writing at MAX_COUNTED so repeated downloads can't run up R2 write costs.
+    if (method === "GET" && (m.downloads ?? 0) < MAX_COUNTED) waitUntil(bucket.put(metaKey(id), JSON.stringify({ ...m, downloads: (m.downloads ?? 0) + 1 })));
     const name = safeFileName(m);
     return new Response(method === "HEAD" ? null : o.body, {
       headers: {

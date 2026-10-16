@@ -378,7 +378,7 @@ function BuildRow({ b, onDelete }: { b: Build; onDelete: () => void }) {
         </b>
         <span>
           {t(left.unit === "day" ? "Expires in {n} days" : left.unit === "hour" ? "Expires in {n} hours" : "Expires in {n} minutes", { n: left.n })} ·{" "}
-          {t(b.downloads === 1 ? "{n} download" : "{n} downloads", { n: b.downloads })} · {mb(b.size)}
+          {t(b.downloads === 1 ? "{n} download" : "{n} downloads", { n: b.downloads >= 999 ? "999+" : b.downloads })} · {mb(b.size)}
         </span>
       </div>
       <div className="bs-row-actions">
