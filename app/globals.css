@@ -494,6 +494,7 @@ footer{border-top:3px solid var(--line);padding-block:30px 40px;color:var(--mute
 .pin-dialog{width:min(380px,calc(100vw - 32px));padding:26px 22px 20px;background:var(--dialog-bg);color:var(--text);border:4px solid var(--dialog-border);border-radius:8px;box-shadow:0 0 0 4px var(--dialog-bg),10px 10px 0 4px rgba(0,0,0,.4);text-align:center}
 .pin-dialog::backdrop{background:rgba(6,7,26,.75)}
 .pin-dialog img{width:56px;height:56px;border-radius:14px;border:3px solid var(--line)}
+.pin-dialog .pin-icon{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:14px;border:3px solid var(--line);background:var(--panel);font-size:28px}
 .pin-dialog h3{margin:10px 0 4px;font-family:var(--f-pixel);font-size:20px}
 .pin-dialog p{margin:0 0 14px;color:var(--muted)}
 .pin-boxes{display:flex;justify-content:center;gap:12px;margin:6px 0 10px}

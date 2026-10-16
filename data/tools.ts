@@ -1,5 +1,6 @@
 // Tools listed on the Tools page, in groups.
-export type Tool = { href: string; icon: string; name: string; description: string; tags: string[]; locked?: boolean };
+export type Tool = { href: string; icon: string; name: string; description: string; tags: string[]; pinHash?: string };
+// pinHash: SHA-256 (hex) of the PIN asked before the tool opens.
 export type ToolGroup = { title: string; tools: Tool[] };
 
 export const toolGroups: ToolGroup[] = [
@@ -64,7 +65,7 @@ export const toolGroups: ToolGroup[] = [
         name: "Test App",
         description: "Preview private app builds on real iPhone-size screens (393 × 852), up to 12 at once. Each project needs its PIN.",
         tags: ["Preview", "PIN"],
-        locked: true,
+        pinHash: "d86d84d945596a7836b26b9e06e05042ba9617bac697b793b008fb4c4f7c218a",
       },
     ],
   },

@@ -2,6 +2,7 @@
 // Brand and technical names (Android, Flutter, KHQR, SHA-1, Play Console…) stay in English.
 
 export const KM: Record<string, string> = {
+  "Enter the 4-digit PIN to open this tool.": "បញ្ចូល PIN ៤ ខ្ទង់ ដើម្បីបើកឧបករណ៍នេះ។",
   "Copy": "ចម្លង",
   "Copied": "បានចម្លង",
   "Selected": "បានជ្រើសរើស",
