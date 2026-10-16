@@ -57,6 +57,18 @@ export const toolGroups: ToolGroup[] = [
     ],
   },
   {
+    title: "Code & Data",
+    tools: [
+      {
+        href: "/json",
+        icon: "🧾",
+        name: "Pretty JSON",
+        description: "Paste JSON and see it formatted on the other side, with colours and a collapsible tree view. Minify it, load a .json file, and get the exact line and column of any error.",
+        tags: ["JSON", "Format", "Free"],
+      },
+    ],
+  },
+  {
     title: "Testing",
     tools: [
       {
