@@ -2,6 +2,10 @@
 // Brand and technical names (Android, Flutter, KHQR, SHA-1, Play Console…) stay in English.
 
 export const KM: Record<string, string> = {
+  "Whoa, that's a lot of messages! Wait a minute, then send again.": "អូ៎ សារច្រើនណាស់! សូមរង់ចាំមួយនាទី រួចផ្ញើម្តងទៀត។",
+  "Too many requests": "សំណើច្រើនពេក",
+  "Wait a minute, then reload the page.": "សូមរង់ចាំមួយនាទី រួចផ្ទុកទំព័រឡើងវិញ។",
+  "Too many requests. Wait a minute and try again.": "សំណើច្រើនពេក។ សូមរង់ចាំមួយនាទី រួចសាកម្តងទៀត។",
   "Tools · Build Share": "ឧបករណ៍ · ចែករំលែក Build",
   "Build share": "ចែករំលែក Build",
   "Build Share": "ចែករំលែក Build",

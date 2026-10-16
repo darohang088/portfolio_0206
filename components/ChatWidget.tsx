@@ -168,6 +168,10 @@ export default function ChatWidget() {
         body: JSON.stringify({ ...form, interests, startedAt: startedAt.current }),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean };
+      if (res.status === 429) {
+        await botSay(t("Whoa, that's a lot of messages! Wait a minute, then send again."), 500);
+        return;
+      }
       if (!res.ok || !data.ok) throw new Error("not sent");
       setForm((f) => ({ ...f, message: "" }));
       const r = replyWhere(contact);

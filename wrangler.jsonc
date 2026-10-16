@@ -13,6 +13,12 @@
   },
   // Build Share: test APKs are stored in this R2 bucket (create it first in the dashboard).
   "r2_buckets": [{ "binding": "BUILDS", "bucket_name": "app-builds" }],
+  // Per-visitor rate limits (requests per 60 seconds, counted per IP address).
+  "ratelimits": [
+    { "name": "RL_CHAT", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } },
+    { "name": "RL_BUILDS", "namespace_id": "1002", "simple": { "limit": 60, "period": 60 } },
+    { "name": "RL_OWNER", "namespace_id": "1003", "simple": { "limit": 30, "period": 60 } }
+  ],
   // Daily clean-up of expired builds.
   "triggers": { "crons": ["17 3 * * *"] }
 }

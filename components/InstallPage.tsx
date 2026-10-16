@@ -8,7 +8,7 @@ import { AppHead } from "./BuildShare";
 import QrImage from "./QrImage";
 import LangToggle from "./LangToggle";
 
-type State = { kind: "loading" } | { kind: "missing" } | { kind: "expired" } | { kind: "error" } | { kind: "ok"; build: Build };
+type State = { kind: "loading" } | { kind: "missing" } | { kind: "expired" } | { kind: "busy" } | { kind: "error" } | { kind: "ok"; build: Build };
 type Device = "android" | "ios" | "desktop";
 
 // The page testers open from a Build Share link (/i/<id>): app details, Download button, QR code and install help.
@@ -27,6 +27,7 @@ export default function InstallPage() {
     fetch(`/api/builds/${id}`)
       .then(async (r) => {
         if (r.status === 410) return setState({ kind: "expired" });
+        if (r.status === 429) return setState({ kind: "busy" });
         if (r.status === 404) return setState({ kind: "missing" });
         const data = await r.json();
         setState(data.ok ? { kind: "ok", build: data.build } : { kind: "error" });
@@ -51,10 +52,10 @@ export default function InstallPage() {
       ) : state.kind !== "ok" ? (
         <section className="ip-card ip-msg">
           <span className="ip-big" aria-hidden="true">
-            {state.kind === "expired" ? "⌛" : "🔍"}
+            {state.kind === "expired" || state.kind === "busy" ? "⌛" : "🔍"}
           </span>
-          <h1>{t(state.kind === "expired" ? "This link has expired" : state.kind === "missing" ? "Link not found" : "Couldn't load this build")}</h1>
-          <p>{t(state.kind === "error" ? "Check your connection and reload the page." : "Test links only work for a few days. Ask for a new link to get the latest build.")}</p>
+          <h1>{t(state.kind === "expired" ? "This link has expired" : state.kind === "missing" ? "Link not found" : state.kind === "busy" ? "Too many requests" : "Couldn't load this build")}</h1>
+          <p>{t(state.kind === "busy" ? "Wait a minute, then reload the page." : state.kind === "error" ? "Check your connection and reload the page." : "Test links only work for a few days. Ask for a new link to get the latest build.")}</p>
         </section>
       ) : (
         <Ready build={state.build} device={device} url={url} lang={lang} />

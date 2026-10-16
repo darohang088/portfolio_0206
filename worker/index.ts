@@ -9,8 +9,16 @@
 
 import { handleBuilds, sweep, type BuildEnv } from "./builds";
 
+// Cloudflare's rate limiting binding (see "ratelimits" in wrangler.jsonc).
+interface RateLimit {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
+
 interface Env extends BuildEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
+  RL_CHAT?: RateLimit;
+  RL_BUILDS?: RateLimit;
+  RL_OWNER?: RateLimit;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
 }
@@ -121,11 +129,41 @@ export async function handleMessage(request: Request, env: Env, send: typeof fet
   return json({ ok: true });
 }
 
+// Per-visitor limits so one bot can't spam Telegram, hammer storage or guess the upload password.
+// Requests over the limit get 429 and can retry after a minute.
+async function tooMany(limiter: RateLimit | undefined, request: Request, scope: string) {
+  if (!limiter) return false; // binding not set up (e.g. older config): don't block anyone
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  try {
+    return !(await limiter.limit({ key: `${scope}:${ip}` })).success;
+  } catch {
+    return false;
+  }
+}
+
+const slowDown = (html = false) =>
+  html
+    ? new Response("Too many requests. Wait a minute and try again.", { status: 429, headers: { "retry-after": "60", "content-type": "text/plain; charset=utf-8" } })
+    : new Response(JSON.stringify({ ok: false, error: "Too many requests. Wait a minute and try again." }), {
+        status: 429,
+        headers: { "retry-after": "60", "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+      });
+
+// Owner actions: listing, creating, uploading parts, finishing and deleting builds.
+const isOwnerCall = (request: Request, url: URL) => request.headers.has("authorization") || (request.method !== "GET" && request.method !== "HEAD") || url.pathname === "/api/builds" || url.pathname === "/api/builds/";
+
 export default {
   async fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
     const url = new URL(request.url);
-    if (url.pathname === "/api/message") return handleMessage(request, env);
-    if (url.pathname === "/api/builds" || url.pathname.startsWith("/api/builds/")) return handleBuilds(request, env, url, (p) => ctx.waitUntil(p));
+    if (url.pathname === "/api/message") {
+      if (request.method === "POST" && (await tooMany(env.RL_CHAT, request, "chat"))) return slowDown();
+      return handleMessage(request, env);
+    }
+    if (url.pathname === "/api/builds" || url.pathname.startsWith("/api/builds/")) {
+      const owner = isOwnerCall(request, url);
+      if (await tooMany(owner ? env.RL_OWNER : env.RL_BUILDS, request, owner ? "owner" : "builds")) return slowDown(url.pathname.endsWith("/download"));
+      return handleBuilds(request, env, url, (p) => ctx.waitUntil(p));
+    }
     // Short tester links: /i/<id> shows the download page, which reads the id from the address.
     if (/^\/i\/[a-z0-9]+\/?$/.test(url.pathname)) {
       const page = await env.ASSETS.fetch(new Request(new URL("/install", url), request));
