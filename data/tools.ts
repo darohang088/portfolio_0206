@@ -22,6 +22,13 @@ export const toolGroups: ToolGroup[] = [
         tags: ["Google Play", "Privacy", "Free"],
       },
       {
+        href: "/share",
+        icon: "📲",
+        name: "Build Share",
+        description: "Drop a test APK and get a short link and QR code for clients and testers: a clean download page with the app icon, version and install help. Links expire on their own.",
+        tags: ["Testers", "QR", "Owner"],
+      },
+      {
         href: "/apk-diff",
         icon: "🆚",
         name: "Manifest & Permissions Diff",

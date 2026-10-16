@@ -17,6 +17,8 @@ const ATTR_IDS: Record<number, string> = {
   0x01010527: "networkSecurityConfig",
   0x01010001: "label",
   0x01010002: "icon",
+  0x01010199: "drawable",
+  0x01010272: "testOnly",
 };
 
 export function parseAxml(buf: Uint8Array): XmlNode | null {
@@ -58,6 +60,7 @@ export function parseAxml(buf: Uint8Array): XmlNode | null {
         else if (dataType === 0x12) value = data !== 0;
         else if (dataType === 0x10 || dataType === 0x11) value = data | 0;
         else if (dataType === 0x01) value = `@0x${data.toString(16)}`;
+        else if (dataType === 0x04) value = new DataView(new Uint32Array([data]).buffer).getFloat32(0, true);
         else value = raw !== 0xffffffff ? (strings[raw] ?? data) : data;
         node.attrs[key] = value;
       }

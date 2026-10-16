@@ -1,15 +1,22 @@
 // Cloudflare Worker for the portfolio.
-// Serves the static site from `out/`, and handles POST /api/message by
-// forwarding the visitor's message to Daro's Telegram through a bot.
+// Serves the static site from `out/`, handles POST /api/message by forwarding the
+// visitor's message to Daro's Telegram through a bot, and runs Build Share (/api/builds, /i/<id>).
 //
 // Secrets (set in Cloudflare: Settings → Variables and Secrets):
 //   TELEGRAM_BOT_TOKEN  the token @BotFather gives you
 //   TELEGRAM_CHAT_ID    your own chat id, so only you receive messages
+//   UPLOAD_SECRET       the password for uploading builds
 
-interface Env {
+import { handleBuilds, sweep, type BuildEnv } from "./builds";
+
+interface Env extends BuildEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
+}
+
+interface Ctx {
+  waitUntil(p: Promise<unknown>): void;
 }
 
 type Payload = { name?: unknown; email?: unknown; message?: unknown; interests?: unknown; company?: unknown; startedAt?: unknown };
@@ -115,9 +122,22 @@ export async function handleMessage(request: Request, env: Env, send: typeof fet
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/api/message") return handleMessage(request, env);
+    if (url.pathname === "/api/builds" || url.pathname.startsWith("/api/builds/")) return handleBuilds(request, env, url, (p) => ctx.waitUntil(p));
+    // Short tester links: /i/<id> shows the download page, which reads the id from the address.
+    if (/^\/i\/[a-z0-9]+\/?$/.test(url.pathname)) {
+      const page = await env.ASSETS.fetch(new Request(new URL("/install", url), request));
+      const res = new Response(page.body, page);
+      res.headers.set("x-robots-tag", "noindex");
+      return res;
+    }
     return env.ASSETS.fetch(request);
+  },
+
+  // Daily clean-up of expired builds (the bucket's lifecycle rule is a second safety net).
+  async scheduled(_event: unknown, env: Env, ctx: Ctx) {
+    if (env.BUILDS) ctx.waitUntil(sweep(env.BUILDS));
   },
 };

@@ -6,3 +6,7 @@ next-env.d.ts
 .vercel
 .env*.local
 .DS_Store
+
+# local Cloudflare dev files
+.dev.vars
+.wrangler/

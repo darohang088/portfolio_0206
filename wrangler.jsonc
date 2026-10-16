@@ -1,5 +1,5 @@
-// Cloudflare Workers config: a small Worker (worker/index.ts) handles /api/message
-// and serves the static site built into `out/` for everything else.
+// Cloudflare Workers config: a small Worker (worker/index.ts) handles /api/message and
+// Build Share (/api/builds, /i/<id>), and serves the static site built into `out/` for everything else.
 {
   "name": "portfolio-0206",
   "main": "worker/index.ts",
@@ -7,6 +7,12 @@
   "assets": {
     "directory": "./out",
     "binding": "ASSETS",
-    "not_found_handling": "404-page"
-  }
+    "not_found_handling": "404-page",
+    // Browser page visits to these paths must reach the Worker, not the 404 page.
+    "run_worker_first": ["/api/*", "/i/*"]
+  },
+  // Build Share: test APKs are stored in this R2 bucket (create it first in the dashboard).
+  "r2_buckets": [{ "binding": "BUILDS", "bucket_name": "app-builds" }],
+  // Daily clean-up of expired builds.
+  "triggers": { "crons": ["17 3 * * *"] }
 }
