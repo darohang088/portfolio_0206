@@ -52,13 +52,13 @@ export default function TestProjects() {
           <img src={unlocked.logo} alt="" width={48} height={48} />
           <div>
             <h3>{unlocked.name}</h3>
-            <p>Paste a link and press Render to see it at 393 × 852, the screen size of an iPhone 15 or 16.</p>
+            <p>Press Render to see it at 393 × 852, the screen size of an iPhone 15 or 16.</p>
           </div>
           <button className="mini-tool" type="button" onClick={lock}>
             ← All projects
           </button>
         </div>
-        <DeviceTester />
+        <DeviceTester fixedUrl={unlocked.url} />
       </div>
     );
   }

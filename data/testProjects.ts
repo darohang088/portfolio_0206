@@ -7,6 +7,7 @@ export type TestProject = {
   logo: string;
   description: string;
   tags: string[];
+  url: string; // the site to preview, filled in and locked on the Test page
   pinHash: string;
 };
 
@@ -18,6 +19,7 @@ export const testProjects: TestProject[] = [
     description:
       "Preview builds of Tos (តោះ), the social activity app for Cambodian Gen Z. Check screens at real iPhone size before release.",
     tags: ["Flutter", "Pre-launch", "Private"],
+    url: "https://genz.darohang009988.workers.dev",
     pinHash: "f68a48a9c71bc372e609614120de1687419e54974418fadeb37b8a0454ad5f68",
   },
 ];

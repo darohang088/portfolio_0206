@@ -37,9 +37,9 @@ export function normalizeUrl(input: string): string | null {
 const clampScreens = (n: number) => Math.min(MAX_SCREENS, Math.max(1, Math.round(n) || 1));
 
 // Type a URL and how many screens, press Render, and see the site in that many
-// 393 × 852 phone frames, at most 4 per row.
-export default function DeviceTester() {
-  const [input, setInput] = useState("");
+// 393 × 852 phone frames, at most 4 per row. With fixedUrl the address is filled in and locked.
+export default function DeviceTester({ fixedUrl }: { fixedUrl?: string }) {
+  const [input, setInput] = useState(fixedUrl ?? "");
   const [countInput, setCountInput] = useState("1");
   const [url, setUrl] = useState<string | null>(null);
   const [count, setCount] = useState(1);
@@ -87,14 +87,14 @@ export default function DeviceTester() {
   // Open with ?url=…&screens=… already rendered, so a test can be shared as a link.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const n = normalizeUrl(params.get("url") ?? "");
+    const n = fixedUrl ? null : normalizeUrl(params.get("url") ?? "");
     const c = clampScreens(Number(params.get("screens") ?? 1));
     if (!n) return;
     setInput(params.get("url") ?? "");
     setCountInput(String(c));
     setUrl(n);
     setCount(c);
-  }, []);
+  }, [fixedUrl]);
 
   const render = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,6 +148,9 @@ export default function DeviceTester() {
           autoComplete="url"
           spellCheck={false}
           value={input}
+          readOnly={!!fixedUrl}
+          aria-readonly={fixedUrl ? true : undefined}
+          title={fixedUrl ? "This project's address is fixed" : undefined}
           aria-invalid={error ? true : undefined}
           aria-describedby="testErr"
           onChange={(e) => setInput(e.target.value)}

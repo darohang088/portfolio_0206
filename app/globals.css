@@ -509,3 +509,5 @@ footer{border-top:3px solid var(--line);padding-block:30px 40px;color:var(--mute
 .test-open-head h3{margin:0;font-family:var(--f-pixel);font-size:20px}
 .test-open-head p{margin:2px 0 0;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.pin-boxes.bad{animation:none}}
+.tester-url[readonly]{cursor:default;color:var(--muted);background:var(--inset);border-style:dashed}
+.tester-url[readonly]:focus{outline:none}
