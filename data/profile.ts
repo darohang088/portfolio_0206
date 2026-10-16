@@ -4,7 +4,6 @@ export const profile = {
   name: "Hang Daro",
   firstName: "Hang",
   lastName: "Daro",
-  level: "Player 1 · Level 6",
   roles: [
     "Android Development Engineer",
     "Flutter & Native Developer",
