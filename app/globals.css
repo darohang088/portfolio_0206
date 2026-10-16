@@ -919,3 +919,43 @@ html[lang="km"] h2{line-height:1.5}
 .ip-foot{margin:0;text-align:center;font-size:13px;color:var(--muted)}
 .ip-download{flex-direction:column;gap:2px;padding:14px 20px 18px;text-align:center}
 .bs-done>.mini-tool{justify-self:start}
+
+/* Encode & Hash */
+.eh-head-actions{display:flex;align-items:center;gap:6px}
+.eh-head-actions .mini-tool{padding:3px 9px;font-size:13px}
+.eh-head-actions .mini-tool:disabled{opacity:.45;cursor:default;transform:none}
+.eh-check{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.eh-file{display:flex;align-items:center;gap:12px;margin:14px;padding:14px;background:var(--inset);border:2px dashed var(--line);border-radius:8px}
+.eh-file>span{font-size:28px}
+.eh-file div{display:grid;flex:1;min-width:0}
+.eh-file b{overflow-wrap:anywhere}
+.eh-file small{color:var(--muted)}
+.eh-err{margin:0 14px 12px}
+.eh-binary{display:grid;gap:10px;justify-items:start;padding:14px}
+.eh-binary p{margin:0}
+.eh-binary img{max-width:100%;max-height:240px;border:2px solid var(--line);border-radius:6px;background:repeating-conic-gradient(#ccc 0 25%,#fff 0 50%) 0 0/16px 16px}
+.eh-binary pre{margin:6px 0 0;font:12px/1.5 ui-monospace,monospace;color:var(--muted)}
+.eh-hashes{display:grid;gap:8px;margin:0;padding:12px;list-style:none}
+.eh-hashes li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;padding:10px;background:var(--panel);border:2px solid var(--line);border-radius:8px}
+.eh-hashes li.match{border-color:var(--mint-text);box-shadow:0 0 0 2px rgba(78,240,143,.25)}
+.eh-hashes span{font:700 12px var(--f-pixel);letter-spacing:.06em}
+.eh-hashes em{margin-left:6px;font-style:normal;color:var(--mint-text)}
+.eh-hashes code{grid-column:1/-1;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere;word-break:break-all}
+.eh-hashes .mini-tool{grid-row:1;grid-column:2;justify-self:end;padding:3px 9px;font-size:13px}
+.eh-compare{margin:0 12px 12px}
+.eh-compare input{padding:10px 12px;font:13px ui-monospace,monospace}
+.eh-compare small{font-size:14px}
+.eh-compare small.ok{color:var(--mint-text)}.eh-compare small.bad{color:var(--pink)}
+.eh-stack{display:grid;gap:12px;min-width:0}
+.eh-stack .pj-input{height:min(44vh,400px);min-height:200px}
+.eh-key>div{display:flex;gap:6px}
+.eh-key input{flex:1;min-width:0}
+.eh-key select{font:600 14px var(--f-body);color:var(--text);background:var(--inset);border:3px solid var(--line);border-radius:8px;padding:0 8px}
+.eh-parts{padding:14px;background:var(--panel);border:3px solid var(--line);border-radius:10px}
+.eh-parts h3{margin:0 0 10px;font:700 13px var(--f-pixel);letter-spacing:.06em;text-transform:uppercase}
+.eh-parts table{width:100%;border-collapse:collapse;font-size:14px}
+.eh-parts th{width:1%;padding:6px 12px 6px 0;text-align:left;white-space:nowrap;color:var(--muted);font-weight:600;vertical-align:top}
+.eh-parts td{padding:6px 0;overflow-wrap:anywhere;word-break:break-all}
+.eh-parts tr+tr{border-top:1px solid var(--line)}
+.eh .pj-output{overflow:auto}
+.eh .pj-input{white-space:pre-wrap;word-break:break-all}

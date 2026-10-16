@@ -73,6 +73,13 @@ export const toolGroups: ToolGroup[] = [
         description: "Paste JSON and see it formatted on the other side, with colours and a collapsible tree view. Minify it, load a .json file, and get the exact line and column of any error.",
         tags: ["JSON", "Format", "Free"],
       },
+      {
+        href: "/encode",
+        icon: "🔐",
+        name: "Encode & Hash",
+        description: "Base64 and URL encode or decode, MD5 / SHA-1 / SHA-256 / SHA-512 checksums of text or any file, and HMAC signatures. Decoded images preview right away.",
+        tags: ["Base64", "SHA-256", "Free"],
+      },
     ],
   },
   {
