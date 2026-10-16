@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { FRAMES, W, H, draw, type Frame } from "@/lib/qrFrames";
 
+const DEFAULT_TEXT = "https://portfolio-0206.darohang009988.workers.dev";
+
 // QR Code Maker: type any text or link, pick a frame, download the PNG.
 export default function QrMaker() {
-  const [text, setText] = useState("https://portfolio-0206.darohang009988.workers.dev");
+  const [text, setText] = useState(DEFAULT_TEXT);
   const [frame, setFrame] = useState<Frame>("pay");
   const [title, setTitle] = useState(FRAMES[0].title);
   const [caption, setCaption] = useState(FRAMES[0].caption);
@@ -37,6 +39,19 @@ export default function QrMaker() {
       alive = false;
     };
   }, [text, frame, title, caption]);
+
+  // Coming back with the browser's Back button can restore old text; start fresh instead.
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setText(DEFAULT_TEXT);
+      setFrame("pay");
+      setTitle(FRAMES[0].title);
+      setCaption(FRAMES[0].caption);
+    };
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
 
   const pick = (f: Frame) => {
     const d = FRAMES.find((x) => x.id === f)!;

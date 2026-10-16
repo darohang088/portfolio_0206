@@ -57,6 +57,37 @@ export default function KhqrReader() {
     setResult(decodeKhqr(data));
   }, []);
 
+  // Text from the camera, the URL box or Paste has no picture of its own, so drop any old one.
+  const showText = useCallback(
+    (data: string) => {
+      setPreview((old) => {
+        if (old) URL.revokeObjectURL(old);
+        return null;
+      });
+      show(data);
+    },
+    [show],
+  );
+
+  // Start clean: clear the last result, picture and inputs.
+  const reset = useCallback(() => {
+    setResult(null);
+    setError("");
+    setUrl("");
+    setText("");
+    setPreview((old) => {
+      if (old) URL.revokeObjectURL(old);
+      return null;
+    });
+  }, []);
+
+  // Coming back with the browser's Back button can restore the old page; clear it then too.
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => e.persisted && reset();
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, [reset]);
+
   const fromBlob = useCallback(
     async (blob: Blob) => {
       setBusy(true);
@@ -99,7 +130,7 @@ export default function KhqrReader() {
     e.preventDefault();
     const v = url.trim();
     if (!v) return;
-    if (/^000201/.test(v)) return show(v); // they pasted the KHQR text itself
+    if (/^000201/.test(v)) return showText(v); // they pasted the KHQR text itself
     setBusy(true);
     setError("");
     try {
@@ -123,8 +154,8 @@ export default function KhqrReader() {
             aria-selected={mode === m.id}
             className={mode === m.id ? "on" : undefined}
             onClick={() => {
+              if (m.id !== mode) reset();
               setMode(m.id);
-              setError("");
             }}
           >
             {m.label}
@@ -162,7 +193,7 @@ export default function KhqrReader() {
         </form>
       )}
 
-      {mode === "camera" && <CameraScan onFound={show} />}
+      {mode === "camera" && <CameraScan onFound={showText} />}
 
       {mode === "paste" && (
         <div className="qr-paste">
@@ -174,7 +205,7 @@ export default function KhqrReader() {
             className="qr-row"
             onSubmit={(e) => {
               e.preventDefault();
-              if (text.trim()) show(text);
+              if (text.trim()) showText(text);
             }}
           >
             <input className="tester-url" placeholder="…or paste the KHQR text (starts with 000201)" value={text} onChange={(e) => setText(e.target.value)} />
@@ -278,6 +309,7 @@ function readQrVideo(v: HTMLVideoElement) {
 
 function KhqrView({ r, preview }: { r: KhqrResult; preview: string | null }) {
   const [tech, setTech] = useState(false);
+  const zoom = useRef<HTMLDialogElement>(null);
   const amount = r.fields.find((f) => f.label === "Amount");
   return (
     <section className="khqr-result" aria-label="Decoded QR">
@@ -290,8 +322,11 @@ function KhqrView({ r, preview }: { r: KhqrResult; preview: string | null }) {
       {r.isKhqr || r.fields.length > 2 ? (
         <div className="khqr-card">
           {preview && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img className="khqr-thumb" src={preview} alt="The QR image you gave" />
+            <button className="khqr-thumb-btn" type="button" onClick={() => zoom.current?.showModal()} aria-label="View the QR image larger">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="khqr-thumb" src={preview} alt="The QR image you gave" />
+              <span aria-hidden="true">🔍 Tap to view</span>
+            </button>
           )}
           <div className="khqr-main">
             <p className="khqr-to">Pay to</p>
@@ -331,6 +366,16 @@ function KhqrView({ r, preview }: { r: KhqrResult; preview: string | null }) {
           {e}
         </p>
       ))}
+
+      {preview && (
+        <dialog ref={zoom} className="img-zoom" onClick={(e) => e.target === e.currentTarget && zoom.current?.close()}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={preview} alt="The QR image you gave, full size" />
+          <button className="img-zoom-close" type="button" onClick={() => zoom.current?.close()} aria-label="Close">
+            ✕
+          </button>
+        </dialog>
+      )}
 
       <div className="khqr-raw">
         <div className="khqr-raw-head">
