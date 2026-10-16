@@ -122,6 +122,7 @@ export default function FingerprintTool() {
           <button className="btn btn-gold" type="submit" disabled={busy}>
             Read ▶
           </button>
+          <PasteHelp />
         </form>
       )}
 
@@ -248,5 +249,60 @@ function CertCard({ c, i }: { c: CertInfo; i: number }) {
         })}
       </div>
     </article>
+  );
+}
+
+// Where to get something to paste: the commands, each with a Copy button.
+const HELP: { title: string; note: string; cmds?: [string, string][] }[] = [
+  {
+    title: "Certificate from your keystore (recommended)",
+    note: "Run in a terminal (it asks for the keystore password), then copy everything from -----BEGIN CERTIFICATE----- to -----END CERTIFICATE-----. Change my-release.jks and upload to your file name and key alias.",
+    cmds: [["Terminal (macOS, Linux, Windows)", "keytool -exportcert -rfc -keystore my-release.jks -alias upload"]],
+  },
+  {
+    title: "Whole keystore as base64",
+    note: "Turns the keystore file into text and copies it. After pasting, you'll be asked for the store password.",
+    cmds: [
+      ["macOS", "base64 -i my-release.jks | pbcopy"],
+      ["Linux (then copy the output)", "base64 -w0 my-release.jks"],
+      ["Windows (PowerShell)", '[Convert]::ToBase64String([IO.File]::ReadAllBytes("my-release.jks")) | Set-Clipboard'],
+    ],
+  },
+  {
+    title: "Google Play app signing key",
+    note: "Play Console → your app → Test and release → Setup → App signing → App signing key certificate → Download certificate. Drop the downloaded deployment_cert.der in the Drop a file tab.",
+  },
+  {
+    title: "Not sure? Skip pasting",
+    note: "Switch to Drop a file and drop your .jks, .keystore, .p12 or .apk directly. It's read in your browser too.",
+  },
+];
+
+function PasteHelp() {
+  return (
+    <details className="paste-help">
+      <summary>💡 How do I get this? Where do I copy it from?</summary>
+      <ol>
+        {HELP.map((h, i) => (
+          <li key={h.title}>
+            <b>{h.title}</b>
+            <p>{h.note}</p>
+            {h.cmds?.map(([label, cmd], k) => (
+              <Cmd key={label} id={`help-${i}-${k}`} label={label} cmd={cmd} />
+            ))}
+          </li>
+        ))}
+      </ol>
+    </details>
+  );
+}
+
+function Cmd({ id, label, cmd }: { id: string; label: string; cmd: string }) {
+  return (
+    <div className="paste-cmd">
+      <span>{label}</span>
+      <code id={id}>{cmd}</code>
+      <CopyButton text={cmd} targetId={id} />
+    </div>
   );
 }

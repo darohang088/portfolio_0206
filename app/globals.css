@@ -718,3 +718,12 @@ footer{border-top:3px solid var(--line);padding-block:30px 40px;color:var(--mute
 .d-change b{color:var(--text)}
 .d-item em{margin-left:8px;padding:1px 6px;font:600 11px var(--f-body);font-style:normal;color:#1a1030;background:#f59a45;border-radius:3px}
 @media (max-width:700px){.diff-slots{grid-template-columns:1fr}.diff-swap{justify-self:center}.fp-row{grid-template-columns:1fr auto}.fp-row span{grid-column:1/-1}.fp-pw{grid-template-columns:1fr}.diff-table li{grid-template-columns:28px minmax(0,1fr)}.d-change{grid-column:2;text-align:left}}
+.paste-help{padding:12px 16px;background:var(--panel);border:3px dashed var(--line);border-radius:10px}
+.paste-help summary{cursor:pointer;font-weight:700;color:var(--gold-text)}
+.paste-help[open] summary{margin-bottom:10px}
+.paste-help ol{margin:0;padding-left:22px;display:grid;gap:14px}
+.paste-help li b{display:block}
+.paste-help li p{margin:4px 0 8px;color:var(--muted);line-height:1.5}
+.paste-cmd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;margin-top:6px;padding:8px 10px;background:var(--inset);border-radius:6px}
+.paste-cmd span{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.paste-cmd code{font:13px/1.5 ui-monospace,monospace;overflow-wrap:anywhere}
