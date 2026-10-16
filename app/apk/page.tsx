@@ -17,8 +17,11 @@ export default function ApkPage() {
       <main>
         <section className="block">
           <div className="wrap">
+            <a className="back-link" href="/tools">
+              ← All tools
+            </a>
             <div className="head">
-              <p className="eyebrow">APK</p>
+              <p className="eyebrow">Tools · APK</p>
               <h2>APK security check</h2>
               <p className="lede">Drop an Android APK to see how secure it is: debug settings, network, exported screens, signing, permissions and hardcoded secrets.</p>
             </div>
