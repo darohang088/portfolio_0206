@@ -48,6 +48,26 @@ export default function ChatWidget() {
     body.current?.scrollTo({ top: body.current.scrollHeight });
   }, [msgs, typing, showChips]);
 
+  // Scrolling over the open chat moves the page, unless a part of the chat (like the
+  // message list) can still scroll that way itself.
+  useEffect(() => {
+    const el = panel.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      for (let n = e.target as HTMLElement | null; n && n !== el; n = n.parentElement) {
+        if (/(auto|scroll)/.test(getComputedStyle(n).overflowY) && n.scrollHeight > n.clientHeight + 1) {
+          const atTop = n.scrollTop <= 0;
+          const atEnd = n.scrollTop + n.clientHeight >= n.scrollHeight - 1;
+          if ((e.deltaY < 0 && !atTop) || (e.deltaY > 0 && !atEnd)) return;
+        }
+      }
+      e.preventDefault();
+      window.scrollBy({ top: e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1) });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
   const add = (who: Msg["who"], text: string) => setMsgs((m) => [...m, { id: nextId.current++, who, text }]);
 
   const botSay = useCallback((text: string, delay = 650) => {
