@@ -18,6 +18,6 @@ export const testProjects: TestProject[] = [
     description:
       "Preview builds of Tos (តោះ), the social activity app for Cambodian Gen Z. Check screens at real iPhone size before release.",
     tags: ["Flutter", "Pre-launch", "Private"],
-    pinHash: "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    pinHash: "f68a48a9c71bc372e609614120de1687419e54974418fadeb37b8a0454ad5f68",
   },
 ];
