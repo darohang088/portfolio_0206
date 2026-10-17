@@ -1234,3 +1234,11 @@ html[lang="km"] .gd-card p,html[lang="km"] .gd-branches span,html[lang="km"] .gd
 .rm-end{margin:0;padding:14px 16px;background:var(--plum);border:2px solid var(--violet);border-radius:10px;color:#eef0ff;line-height:1.7}
 html[lang="km"] .rm-intro>p,html[lang="km"] .rm-tasks label,html[lang="km"] .rm-goal,html[lang="km"] .rm-proof{line-height:1.85}
 @media (max-width:560px){.rm-month{grid-template-columns:minmax(0,1fr)}.rm-months::before{display:none}.rm-badge{width:auto;height:auto;grid-auto-flow:column;gap:8px;justify-self:start;padding:4px 12px}.rm-badge b{font-size:18px}.rm-progress{top:80px;flex-wrap:wrap}.rm-progress .gl-meter{order:3;flex-basis:100%}}
+/* Long-form reading: the pixel font stays on headings and badges; paragraphs use a plain, readable font. */
+:root{--f-read:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,var(--font-khmer,"Noto Sans Khmer"),sans-serif}
+.rm-intro>p,.rm-box li,.rm-goal,.rm-tasks label,.rm-proof,.rm-cover>div>span:first-child,.rm-habits li,.rm-end,.rm .lede,.rm-meta{font-family:var(--f-read);letter-spacing:0}
+.rm-intro>p{font-size:18px;line-height:1.75}
+.rm-tasks label,.rm-proof,.rm-box li,.rm-habits li,.rm-cover>div>span:first-child{font-size:16.5px;line-height:1.65}
+.rm-goal{font-size:17px}
+.rm-end{font-size:17px}
+.rm-proof b{font-family:var(--f-read)}
