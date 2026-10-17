@@ -275,8 +275,8 @@ export type Post = { title: string; summary: string; tag: string; url?: string }
 
 export const posts: Post[] = [
   {
-    title: "Senior Officer, IT Native Mobile Development",
-    summary: "Route to becoming an experienced Senior Officer, IT Native Mobile Development: lead the Native Mobile Unit and take end-to-end technical ownership of Android and iOS apps. A step-by-step plan for one year.",
+    title: "Manager, IT Native Mobile Development",
+    summary: "Route to becoming an experienced Manager, IT Native Mobile Development: lead the Native Mobile Unit and take end-to-end technical ownership of Android and iOS apps. A step-by-step plan for one year.",
     tag: "Career",
     url: "/blog/native-mobile-lead-roadmap",
   },

@@ -1,4 +1,4 @@
-// Blog post: a one-year roadmap to "Senior Officer, IT Native Mobile Development".
+// Blog post: a one-year roadmap to "Manager, IT Native Mobile Development".
 // Each month has topics to learn (technical names stay in English), tasks people can tick off,
 // and the proof to keep for interviews. Text is in English and plain Khmer.
 

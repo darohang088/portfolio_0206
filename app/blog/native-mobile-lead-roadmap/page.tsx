@@ -7,7 +7,7 @@ import BackToTop from "@/components/BackToTop";
 import { profile } from "@/data/profile";
 
 export const metadata: Metadata = {
-  title: `Senior Officer, IT Native Mobile Development: a one-year roadmap · ${profile.name}`,
+  title: `Manager, IT Native Mobile Development: a one-year roadmap · ${profile.name}`,
   description: "A step-by-step, one-year plan to lead a Native Mobile Unit and own Android and iOS apps end to end: iOS, WebView bridges, safe content updates, performance, security, releases, leadership and incidents.",
 };
 

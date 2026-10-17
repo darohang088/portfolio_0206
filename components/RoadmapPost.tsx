@@ -7,7 +7,7 @@ import { COVERAGE, HABITS, HOW_TO, INTRO, PHASES, ROADMAP_SLUG, type Bi } from "
 const STORE = `roadmap-${ROADMAP_SLUG}`;
 const ALL = PHASES.flatMap((p) => p.months.flatMap((m) => m.tasks.map((_, i) => `${m.n}.${i}`)));
 
-// Blog post: one-year roadmap to Senior Officer, IT Native Mobile Development, with tickable tasks.
+// Blog post: one-year roadmap to Manager, IT Native Mobile Development, with tickable tasks.
 export default function RoadmapPost() {
   const { t, lang } = useLang();
   const L = (b: Bi) => (lang === "km" ? b.km : b.en);
@@ -51,8 +51,8 @@ export default function RoadmapPost() {
       </a>
       <header className="head rm-head">
         <p className="eyebrow">{t("Blogs · Career roadmap")}</p>
-        <h1>{t("Senior Officer, IT Native Mobile Development")}</h1>
-        <p className="lede">{t("The route to becoming an experienced Senior Officer, IT Native Mobile Development: leading the Native Mobile Unit and taking end-to-end technical ownership of Android and iOS apps.")}</p>
+        <h1>{t("Manager, IT Native Mobile Development")}</h1>
+        <p className="lede">{t("The route to becoming an experienced Manager, IT Native Mobile Development: leading the Native Mobile Unit and taking end-to-end technical ownership of Android and iOS apps.")}</p>
         <p className="rm-meta">
           <span>📅 {t("12 months")}</span>
           <span>🧭 {t("4 phases")}</span>

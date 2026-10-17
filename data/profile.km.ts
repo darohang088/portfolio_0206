@@ -126,8 +126,8 @@ export const mascotQuotesKm = [
 
 export const postsKm = [
   {
-    title: "Senior Officer, IT Native Mobile Development",
-    summary: "ផ្លូវឆ្ពោះទៅជា Senior Officer, IT Native Mobile Development ដែលមានបទពិសោធន៍៖ ដឹកនាំក្រុម Native Mobile និងទទួលខុសត្រូវបច្ចេកទេសពីដើមដល់ចប់ លើកម្មវិធី Android និង iOS។ ផែនការមួយជំហានម្តងៗ សម្រាប់មួយឆ្នាំ។",
+    title: "Manager, IT Native Mobile Development",
+    summary: "ផ្លូវឆ្ពោះទៅជា Manager, IT Native Mobile Development ដែលមានបទពិសោធន៍៖ ដឹកនាំក្រុម Native Mobile និងទទួលខុសត្រូវបច្ចេកទេសពីដើមដល់ចប់ លើកម្មវិធី Android និង iOS។ ផែនការមួយជំហានម្តងៗ សម្រាប់មួយឆ្នាំ។",
     tag: "អាជីព",
   },
   {
