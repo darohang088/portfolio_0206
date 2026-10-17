@@ -2,6 +2,7 @@
 // Brand and technical names (Android, Flutter, KHQR, SHA-1, Play Console…) stay in English.
 
 export const KM: Record<string, string> = {
+  "Back to top": "ត្រឡប់ទៅខាងលើ",
   "Career": "អាជីព",
   "One last tip: Flutter or React Native is a bonus, but this role wants real Kotlin and Swift. Keep both native platforms at the centre of everything you build this year.": "គន្លឹះចុងក្រោយ៖ Flutter ឬ React Native គឺជាចំណុចបន្ថែមប៉ុណ្ណោះ ប៉ុន្តែតួនាទីនេះត្រូវការ Kotlin និង Swift ពិតប្រាកដ។ ដាក់ native ទាំងពីរ platform នៅចំកណ្តាលនៃអ្វីៗដែលអ្នកបង្កើតក្នុងឆ្នាំនេះ។",
   "Habits for the whole year": "ទម្លាប់ពេញមួយឆ្នាំ",

@@ -3,6 +3,7 @@ import Nav from "@/components/Nav";
 import RoadmapPost from "@/components/RoadmapPost";
 import Footer from "@/components/Footer";
 import ClickSparks from "@/components/ClickSparks";
+import BackToTop from "@/components/BackToTop";
 import { profile } from "@/data/profile";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function Page() {
       </main>
       <Footer />
       <ClickSparks />
+      <BackToTop />
     </>
   );
 }
