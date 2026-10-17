@@ -2,6 +2,7 @@
 // Brand and technical names (Android, Flutter, KHQR, SHA-1, Play Console…) stay in English.
 
 export const KM: Record<string, string> = {
+  "Tool {n}": "ឧបករណ៍ទី {n}",
   "Encode & Hash": "Encode និង Hash",
   "Tools · Encode & Hash": "ឧបករណ៍ · Encode និង Hash",
   "Encode & hash": "Encode និង hash",

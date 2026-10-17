@@ -959,3 +959,24 @@ html[lang="km"] h2{line-height:1.5}
 .eh-parts tr+tr{border-top:1px solid var(--line)}
 .eh .pj-output{overflow:auto}
 .eh .pj-input{white-space:pre-wrap;word-break:break-all}
+
+/* Tools: numbered pixel star in each card's bottom-right corner; hover it for a spin and sparkle burst */
+.tool-card{position:relative}
+.tool-star{position:absolute;right:12px;bottom:8px;display:grid;place-items:center;width:62px;height:62px;cursor:default}
+.tool-card .tool-go{min-height:46px;display:flex;align-items:flex-end}
+.tool-star svg{grid-area:1/1;width:100%;height:100%;fill:var(--gold);filter:drop-shadow(2px 2px 0 var(--gold-deep)) drop-shadow(0 0 0 transparent);transition:filter .2s}
+.tool-star b{position:relative;z-index:1;grid-area:1/1;margin-top:9px;font:700 16px var(--f-pixel);color:#1a1030;line-height:1;letter-spacing:-.04em}
+.tool-star .spark{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;background:var(--gold);opacity:0;pointer-events:none}
+.tool-star .s1,.tool-star .s4{background:var(--pink)}
+.tool-star .s2,.tool-star .s5{background:var(--sky)}
+.tool-card:hover .tool-star svg{animation:star-twinkle 1.2s steps(4) infinite}
+.tool-star:hover svg{animation:star-spin .7s cubic-bezier(.3,1.6,.5,1) both;filter:drop-shadow(2px 2px 0 var(--gold-deep)) drop-shadow(0 0 10px rgba(246,196,83,.9))}
+.tool-star:hover b{animation:star-num .7s steps(6) both}
+.tool-star:hover .spark{animation:star-spark .7s ease-out both}
+.tool-star .s0{--x:0px;--y:-34px}.tool-star .s1{--x:30px;--y:-18px}.tool-star .s2{--x:30px;--y:18px}
+.tool-star .s3{--x:0px;--y:34px}.tool-star .s4{--x:-30px;--y:18px}.tool-star .s5{--x:-30px;--y:-18px}
+@keyframes star-spin{0%{transform:rotate(0) scale(1)}45%{transform:rotate(200deg) scale(1.35)}100%{transform:rotate(360deg) scale(1.1)}}
+@keyframes star-num{0%,40%{transform:scale(0)}70%{transform:scale(1.4)}100%{transform:scale(1)}}
+@keyframes star-spark{0%{opacity:1;transform:translate(0,0) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.4)}}
+@keyframes star-twinkle{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.tool-star svg,.tool-star b,.tool-star .spark{animation:none!important}}
