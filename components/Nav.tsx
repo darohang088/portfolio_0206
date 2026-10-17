@@ -34,6 +34,7 @@ export default function Nav({ home = true }: { home?: boolean }) {
     if (/^\/(tools|test|apk|apk-diff|khqr|qr|fingerprint|permissions|json|share|encode|proguard|git|icons)(\/|$)/.test(path)) return setActive("/tools");
     if (path.startsWith("/theme")) return setActive("/theme");
     if (path.startsWith("/apps")) return setActive("#apps");
+    if (path.startsWith("/blog")) return setActive("#blogs");
     const ids = LINKS.filter((l) => !l.page).map((l) => l.href);
     let frame = 0;
     const spy = () => {

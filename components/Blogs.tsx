@@ -28,7 +28,7 @@ export default function Blogs() {
               </>
             );
             return p.url ? (
-              <a className="post" href={p.url} key={i} data-reveal target="_blank" rel="noopener noreferrer">
+              <a className="post" href={p.url} key={i} data-reveal {...(p.url.startsWith("/") ? {} : { target: "_blank", rel: "noopener noreferrer" })}>
                 {body}
               </a>
             ) : (
