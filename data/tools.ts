@@ -71,6 +71,18 @@ export const toolGroups: ToolGroup[] = [
     ],
   },
   {
+    title: "App Design",
+    tools: [
+      {
+        href: "/icons",
+        icon: "🎨",
+        name: "App Icon & Splash Generator",
+        description: "Drop one logo and get every icon your app needs: Android adaptive and themed icons, the Android 12 splash icon, iOS, web and store icons, in one zip that matches Flutter's folders. Preview it on Android, iPhone and Google Play first.",
+        tags: ["Icons", "Flutter", "Free"],
+      },
+    ],
+  },
+  {
     title: "Code & Data",
     tools: [
       {
