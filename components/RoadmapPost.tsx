@@ -32,6 +32,16 @@ export default function RoadmapPost() {
     });
 
   const pct = Math.round((done.size / ALL.length) * 100);
+
+  // Scroll to a month (below the sticky nav and progress bar) and flash it so the eye finds it.
+  const goMonth = (n: number) => {
+    const el = document.getElementById(`m-${n}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.classList.remove("flash");
+    void el.offsetWidth; // restart the animation when the same month is clicked twice
+    el.classList.add("flash");
+  };
   const monthDone = (n: number, count: number) => Array.from({ length: count }, (_, i) => done.has(`${n}.${i}`)).every(Boolean);
 
   return (
@@ -77,9 +87,9 @@ export default function RoadmapPost() {
 
       <nav className="rm-jump" aria-label={t("Months")}>
         {PHASES.flatMap((p) => p.months).map((m) => (
-          <a key={m.n} href={`#m-${m.n}`} className={monthDone(m.n, m.tasks.length) ? "done" : undefined} title={L(m.title)}>
+          <button key={m.n} type="button" onClick={() => goMonth(m.n)} className={monthDone(m.n, m.tasks.length) ? "done" : undefined} title={L(m.title)} aria-label={`${t("Month")} ${m.n}: ${L(m.title)}`}>
             {monthDone(m.n, m.tasks.length) ? "✓" : m.n}
-          </a>
+          </button>
         ))}
       </nav>
 
@@ -134,9 +144,9 @@ export default function RoadmapPost() {
               <span>{L(c.req)}</span>
               <span className="rm-chips">
                 {c.months.map((n) => (
-                  <a key={n} href={`#m-${n}`}>
+                  <button key={n} type="button" onClick={() => goMonth(n)}>
                     {t("M{n}", { n })}
-                  </a>
+                  </button>
                 ))}
               </span>
             </div>
