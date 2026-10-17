@@ -36,6 +36,13 @@ export const toolGroups: ToolGroup[] = [
         tags: ["Release", "Review", "Free"],
       },
       {
+        href: "/proguard",
+        icon: "🛡️",
+        name: "ProGuard / R8 Rules",
+        description: "Tick the libraries your Android or Flutter app uses and get a ready proguard-rules.pro with a note on every rule. Also turns R8 \"Missing class\" build errors into the right -dontwarn lines.",
+        tags: ["R8", "Release", "Free"],
+      },
+      {
         href: "/apk",
         icon: "🛡️",
         name: "APK Security Check",
