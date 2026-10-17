@@ -90,6 +90,18 @@ export const toolGroups: ToolGroup[] = [
     ],
   },
   {
+    title: "Learn",
+    tools: [
+      {
+        href: "/git",
+        icon: "🌱",
+        name: "Learn Git",
+        description: "Learn Git and Git flow by doing, in English or Khmer. Type real commands in a practice terminal, watch the commit graph grow, and earn points from your first commit to fixing merge conflicts.",
+        tags: ["Git", "Khmer", "Free"],
+      },
+    ],
+  },
+  {
     title: "Testing",
     tools: [
       {
