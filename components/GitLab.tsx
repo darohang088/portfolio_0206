@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useLang } from "@/lib/i18n";
 import { currentBranch, headCommit, repoAt, run, type GitState, type Line, type Repo } from "@/lib/git/engine";
 import { LEVELS, TOTAL_POINTS } from "@/lib/git/levels";
+import GitDocs from "./GitDocs";
 
 const STORE = "git-lab-v1";
 const WELCOME = "\u0000welcome"; // rendered through t() so it follows the language switch
@@ -29,7 +30,7 @@ export default function GitLab() {
   const [level, setLevel] = useState(0);
   const [done, setDone] = useState<string[]>([]);
   const [mode, setMode] = useState<"terminal" | "visual">("terminal");
-  const [tab, setTab] = useState<"challenge" | "graph">("challenge");
+  const [tab, setTab] = useState<"challenge" | "graph" | "docs">("challenge");
   const [showHints, setShowHints] = useState(true);
   const [showStory, setShowStory] = useState(false);
   const [lines, setLines] = useState<Line[]>([]);
@@ -127,7 +128,9 @@ export default function GitLab() {
 
   const fillCode = (code: string) => {
     setInput(code);
-    inputRef.current?.focus();
+    inputRef.current?.focus({ preventScroll: true });
+    // On phones the terminal sits above the panel, so bring it into view.
+    inputRef.current?.closest(".gl-term")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
 
   const s = state.current;
@@ -257,9 +260,14 @@ export default function GitLab() {
                 {t("Git Graph")}
               </button>
             </span>
+            <button type="button" className={`gl-book${tab === "docs" ? " on" : ""}`} onClick={() => setTab("docs")} title={t("Git docs")} aria-label={t("Git docs")}>
+              📖
+            </button>
           </header>
 
-          {tab === "graph" ? (
+          {tab === "docs" ? (
+            <GitDocs onTry={fillCode} />
+          ) : tab === "graph" ? (
             <Graph repo={repo} />
           ) : (
             <div className="gl-challenge">

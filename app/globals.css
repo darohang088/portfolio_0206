@@ -1099,3 +1099,39 @@ html[lang="km"] h2{line-height:1.5}
 .gl-empty{margin:0;padding:24px 14px;color:var(--muted);text-align:center}
 @media (max-width:900px){.gl-main{grid-template-columns:minmax(0,1fr)}.gl-screen{height:320px}}
 @media (max-width:520px){.gl-progress{flex-wrap:wrap}.gl-meter{flex-basis:100%;order:3}.gl-levels button:nth-child(5){margin-left:0}}
+/* Learn Git docs */
+.gl-tabs{gap:8px;justify-content:space-between}
+.gl-book{width:36px;height:34px;font-size:17px;background:none;border:2px solid var(--line);border-radius:6px;cursor:pointer}
+.gl-book.on{background:var(--gold);border-color:var(--gold-deep)}
+.gd{display:grid;gap:14px;padding:14px;max-height:720px;overflow:auto}
+.gd-search{width:100%;padding:9px 12px;font:15px var(--f-body);color:var(--text);background:var(--inset);border:2px solid var(--line);border-radius:8px}
+.gd-search:focus{outline:0;border-color:var(--gold)}
+.gd-nav{display:flex;flex-wrap:wrap;gap:6px}
+.gd-nav button{padding:5px 12px;font:600 14px var(--f-body);color:var(--muted);background:var(--panel);border:2px solid var(--line);border-radius:999px;cursor:pointer}
+.gd-nav button.on{color:#1a1030;background:var(--mint);border-color:var(--mint-text)}
+.gd-group{display:grid;gap:10px}
+.gd-group h4{margin:4px 0 0;font:700 12px var(--f-pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--gold-text)}
+.gd-card{display:grid;gap:8px;padding:12px;background:var(--inset);border:2px solid var(--line);border-radius:8px}
+.gd-card header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px}
+.gd-card header code{font:700 14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--gold-text);overflow-wrap:anywhere}
+.gd-card p{margin:0;line-height:1.6}
+.gd-try{padding:3px 10px;font:700 12px var(--f-body);color:#1a1030;background:var(--mint);border:2px solid var(--mint-text);border-radius:6px;cursor:pointer}
+.gd-try:hover{transform:translateY(-1px)}
+.gd-real{font-size:12px;color:var(--muted)}
+.gd-ex{margin:0;padding:8px 10px;overflow:auto;background:#0a0b1c;color:#c9cdf0;border-radius:6px;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre}
+.gd-ex span{color:#f7c948}
+.gd-tip{font-size:14px;color:var(--muted)}
+.gd-warn{font-size:14px;color:#ff8fa6}
+.gd-word header b{font-size:16px}
+.gd-undo summary{cursor:pointer;font-weight:700;line-height:1.5}
+.gd-undo[open] summary{margin-bottom:4px}
+.gd-lead{margin:0;line-height:1.6}
+.gd-flow{padding:10px;background:var(--inset);border:2px solid var(--line);border-radius:8px}
+.gd-flow svg{display:block;width:100%;height:auto}
+.gd-branches{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.gd-branches li{display:grid;grid-template-columns:12px 84px minmax(0,1fr);gap:8px;align-items:baseline;font-size:14px;line-height:1.55}
+.gd-branches i{width:12px;height:12px;border:2px solid var(--ink)}
+.gd-branches code{font:700 13px ui-monospace,monospace}
+.gd-steps{display:grid;gap:10px;margin:0;padding-left:22px}
+.gd-steps b{display:block;margin-bottom:6px}
+html[lang="km"] .gd-card p,html[lang="km"] .gd-branches span,html[lang="km"] .gd-undo summary{line-height:1.8}
