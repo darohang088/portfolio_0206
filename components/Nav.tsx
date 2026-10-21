@@ -31,7 +31,7 @@ export default function Nav({ home = true }: { home?: boolean }) {
   useEffect(() => {
     const path = window.location.pathname;
     // Tools and every tool inside it light up "Tools".
-    if (/^\/(tools|test|apk|apk-diff|khqr|qr|fingerprint|permissions|json|share|encode|proguard|git|icons)(\/|$)/.test(path)) return setActive("/tools");
+    if (/^\/(tools|test|apk|apk-diff|khqr|qr|fingerprint|permissions|json|share|encode|proguard|git|icons|apks)(\/|$)/.test(path)) return setActive("/tools");
     if (path.startsWith("/theme")) return setActive("/theme");
     if (path.startsWith("/apps")) return setActive("#apps");
     if (path.startsWith("/blog")) return setActive("#blogs");

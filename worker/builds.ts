@@ -69,6 +69,7 @@ export type BuildMeta = BuildInfo & {
   expires: number;
   ready: boolean;
   downloads: number;
+  listed?: boolean; // shown on the public All APKs page (missing = shown, for builds made before this existed)
   uploadId?: string; // set while the APK parts are still being uploaded
 };
 
@@ -174,6 +175,24 @@ export function cleanInfo(v: unknown): BuildInfo | null {
   };
 }
 
+// Builds for the public All APKs page: ready, not expired, and not hidden by the owner.
+// Read-only (no clean-up here; the owner's list and the daily cron delete expired builds).
+async function listPublic(bucket: R2Bucket) {
+  const keys: string[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await bucket.list({ prefix: "builds/", cursor, limit: 1000 });
+    keys.push(...page.objects.map((o) => o.key).filter((k) => k.endsWith(".json")));
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
+  const now = Date.now();
+  const metas = await Promise.all(keys.map((k) => readMeta(bucket, k.slice(7, -5))));
+  return metas
+    .filter((m): m is BuildMeta => !!m && m.ready && isLive(m, now) && m.listed !== false)
+    .sort((a, b) => b.created - a.created)
+    .map((m) => ({ id: m.id, label: m.label, packageName: m.packageName, versionName: m.versionName, versionCode: m.versionCode, minSdk: m.minSdk, abis: m.abis, size: m.size, icon: m.icon, note: m.note, created: m.created, expires: m.expires }));
+}
+
 // What testers can see: no upload state.
 const publicMeta = (m: BuildMeta) => {
   const { ready: _ready, uploadId: _uploadId, ...rest } = m;
@@ -193,7 +212,8 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
   const action = parts[3];
   const method = request.method;
 
-  // ---- public: details and download ----
+  // ---- public: the All APKs list, details and download ----
+  if (id === "public" && !action && method === "GET") return json({ ok: true, builds: await listPublic(bucket) });
   if (id && !action && method === "GET") {
     const m = await readMeta(bucket, id);
     if (!m || !m.ready) return json({ ok: false, error: "not_found" }, 404);
@@ -260,6 +280,7 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
       expires: now + days * 24 * 60 * 60 * 1000,
       ready: false,
       downloads: 0,
+      listed: body.listed !== false,
       uploadId: upload.uploadId,
     };
     await bucket.put(metaKey(newKey), JSON.stringify(meta), { httpMetadata: { contentType: "application/json" } });
@@ -302,6 +323,19 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
     const { uploadId: _done, ...rest } = m;
     await bucket.put(metaKey(id), JSON.stringify({ ...rest, ready: true }));
     return json({ ok: true, id, url: `${url.origin}/i/${id}` });
+  }
+
+  // Show or hide a build on the All APKs page: PATCH /api/builds/<id> { listed: boolean }
+  if (id && !action && method === "PATCH") {
+    const m = await readMeta(bucket, id);
+    if (!m || !m.ready) return json({ ok: false, error: "This build doesn't exist." }, 404);
+    let listed: unknown;
+    try {
+      listed = ((await request.json()) as { listed?: unknown }).listed;
+    } catch {}
+    if (typeof listed !== "boolean") return json({ ok: false, error: "Couldn't read the request." }, 400);
+    await bucket.put(metaKey(id), JSON.stringify({ ...m, listed }));
+    return json({ ok: true, listed });
   }
 
   if (id && !action && method === "DELETE") {

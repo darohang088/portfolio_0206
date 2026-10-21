@@ -26,6 +26,7 @@ export default function BuildShare() {
   const [step, setStep] = useState<Step>({ kind: "idle" });
   const [days, setDays] = useState<number>(3);
   const [note, setNote] = useState("");
+  const [listed, setListed] = useState(true);
   const [error, setError] = useState("");
   const [drag, setDrag] = useState(false);
   const input = useRef<HTMLInputElement>(null);
@@ -101,7 +102,7 @@ export default function BuildShare() {
     setStep({ kind: "uploading", file, info, sent: 0 });
     const { icon, ...rest } = info;
     try {
-      const { status, data } = await api<{ id: string; partSize: number }>("/api/builds", secret, { method: "POST", body: JSON.stringify({ info: rest, icon, size: file.size, fileName: file.name, days, note }) });
+      const { status, data } = await api<{ id: string; partSize: number }>("/api/builds", secret, { method: "POST", body: JSON.stringify({ info: rest, icon, size: file.size, fileName: file.name, days, note, listed }) });
       if (status === 401) return lock();
       if (!data.ok) throw new Error(data.error);
       const up = await uploadApk(data.id, file, data.partSize, secret, (sent) => setStep({ kind: "uploading", file, info, sent }));
@@ -112,6 +113,17 @@ export default function BuildShare() {
     } catch (e) {
       setStep({ kind: "ready", file, info });
       setError(t(e instanceof Error && e.message ? e.message : "Upload failed. Try again."));
+    }
+  };
+
+  // Show or hide a build on the public All APKs page (updates the row right away, then saves).
+  const setVisible = async (b: Build, on: boolean) => {
+    if (!secret) return;
+    setBuilds((list) => list.map((x) => (x.id === b.id ? { ...x, listed: on } : x)));
+    const { data } = await api("/api/builds/" + b.id, secret, { method: "PATCH", body: JSON.stringify({ listed: on }) });
+    if (!data.ok) {
+      setError(data.error ?? t("Couldn't save. Try again."));
+      refresh(secret);
     }
   };
 
@@ -144,6 +156,13 @@ export default function BuildShare() {
             <label className="field">
               <span>{t("Notes for testers (optional)")}</span>
               <textarea rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("What's new in this build, what to test…")} disabled={step.kind === "uploading"} />
+            </label>
+            <label className="bs-listed">
+              <input type="checkbox" checked={listed} onChange={(e) => setListed(e.target.checked)} disabled={step.kind === "uploading"} />
+              <span>
+                <b>{t("Show on the All APKs page")}</b>
+                <small>{t("Anyone with the All APKs link can see and download it. Untick for a private build: only people you send the link to can get it.")}</small>
+              </span>
             </label>
           </div>
           {step.kind === "uploading" ? (
@@ -200,6 +219,9 @@ export default function BuildShare() {
       <section className="bs-list">
         <header>
           <h3>{t("Active links")}</h3>
+          <a className="mini-tool bs-all" href="/apks" target="_blank" rel="noopener noreferrer">
+            📂 {t("See all APKs")}
+          </a>
           {usage && (
             <span className="bs-usage" title={t("Storage used")}>
               <i style={{ width: `${Math.min(100, (usage.used / usage.cap) * 100)}%` }} />
@@ -217,7 +239,7 @@ export default function BuildShare() {
             {builds
               .filter((b) => b.ready !== false)
               .map((b) => (
-                <BuildRow key={b.id} b={b} onDelete={() => remove(b)} />
+                <BuildRow key={b.id} b={b} onDelete={() => remove(b)} onVisible={(on) => setVisible(b, on)} />
               ))}
           </ul>
         )}
@@ -357,7 +379,7 @@ function LinkCard({ url, info, onAgain }: { url: string; info: AppInfo; onAgain:
   );
 }
 
-function BuildRow({ b, onDelete }: { b: Build; onDelete: () => void }) {
+function BuildRow({ b, onDelete, onVisible }: { b: Build; onDelete: () => void; onVisible: (on: boolean) => void }) {
   const { t } = useLang();
   const [copied, setCopied] = useState(false);
   const url = typeof location !== "undefined" ? `${location.origin}/i/${b.id}` : `/i/${b.id}`;
@@ -377,6 +399,7 @@ function BuildRow({ b, onDelete }: { b: Build; onDelete: () => void }) {
           {b.label} <small>{b.versionName} ({b.versionCode})</small>
         </b>
         <span>
+          {b.listed === false ? <em className="bs-hidden">🙈 {t("Hidden from All APKs")}</em> : <em className="bs-shown">📂 {t("On All APKs")}</em>} ·{" "}
           {t(left.unit === "day" ? "Expires in {n} days" : left.unit === "hour" ? "Expires in {n} hours" : "Expires in {n} minutes", { n: left.n })} ·{" "}
           {t(b.downloads === 1 ? "{n} download" : "{n} downloads", { n: b.downloads >= 999 ? "999+" : b.downloads })} · {mb(b.size)}
         </span>
@@ -397,6 +420,9 @@ function BuildRow({ b, onDelete }: { b: Build; onDelete: () => void }) {
         <a className="mini-tool" href={url} target="_blank" rel="noopener noreferrer">
           {t("Open ↗")}
         </a>
+        <button className="mini-tool" type="button" onClick={() => onVisible(b.listed === false)} aria-pressed={b.listed !== false} title={t("Show or hide this build on the All APKs page")}>
+          {t(b.listed === false ? "Show" : "Hide")}
+        </button>
         <button className="mini-tool danger" type="button" onClick={onDelete}>
           {t("Delete")}
         </button>
