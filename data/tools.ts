@@ -64,6 +64,13 @@ export const toolGroups: ToolGroup[] = [
         tags: ["Google Play", "Release", "Free"],
       },
       {
+        href: "/listing-check",
+        icon: "🏪",
+        name: "Store Listing Checker",
+        description: "Check your Google Play listing before you submit: app name, descriptions, icon, feature graphic and screenshots against Play's metadata policy and size rules, with a live store preview.",
+        tags: ["Google Play", "Listing", "Free"],
+      },
+      {
         href: "/apk",
         icon: "🛡️",
         name: "APK Security Check",
