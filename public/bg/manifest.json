@@ -1,0 +1,63 @@
+{
+  "models": {
+    "best": {
+      "name": "BiRefNet-lite",
+      "license": "MIT",
+      "source": "https://github.com/ZhengPeng7/BiRefNet",
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "sigmoid": true,
+      "parts": [
+        "birefnet-lite-fp16.onnx.part0",
+        "birefnet-lite-fp16.onnx.part1",
+        "birefnet-lite-fp16.onnx.part2",
+        "birefnet-lite-fp16.onnx.part3",
+        "birefnet-lite-fp16.onnx.part4"
+      ],
+      "size": 114929039,
+      "sha256": "f9164a40a4e19e1a33192d2a162e61483a8651f07e97bc8ab02923cc69b2672d"
+    },
+    "standard": {
+      "name": "ISNet (DIS)",
+      "license": "Apache-2.0",
+      "source": "https://github.com/xuebinqin/DIS",
+      "mean": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "std": [
+        1,
+        1,
+        1
+      ],
+      "sigmoid": false,
+      "parts": [
+        "isnet-fp16.onnx.part0",
+        "isnet-fp16.onnx.part1",
+        "isnet-fp16.onnx.part2",
+        "isnet-fp16.onnx.part3"
+      ],
+      "size": 90435479,
+      "sha256": "0bc921bf4d623688bf483fa332e51f6d2ee0ee17f1ef7f7392898c6186703441"
+    }
+  },
+  "wasm": {
+    "name": "onnxruntime-web",
+    "license": "MIT",
+    "parts": [
+      "ort-wasm-simd-threaded.asyncify.wasm.part0",
+      "ort-wasm-simd-threaded.asyncify.wasm.part1"
+    ],
+    "size": 26781914,
+    "sha256": "39f9f0894d478800487ed9f7dbe92618498db320cf55c8e3d89adff8dce658da"
+  }
+}

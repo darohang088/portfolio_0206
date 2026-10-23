@@ -64,6 +64,13 @@ export const toolGroups: ToolGroup[] = [
         tags: ["Google Play", "Release", "Free"],
       },
       {
+        href: "/remove-bg",
+        icon: "✂️",
+        name: "Background Remover",
+        description: "Turn any photo into a transparent PNG with clean edges: AI cut-out in your browser, edge refinement at full size, halo removal and a Keep/Erase brush. Nothing is uploaded.",
+        tags: ["Image", "AI", "Free"],
+      },
+      {
         href: "/listing-check",
         icon: "🏪",
         name: "Store Listing Checker",
