@@ -1282,3 +1282,8 @@ html[lang="km"] .rm-intro>p,html[lang="km"] .rm-tasks label,html[lang="km"] .rm-
 .aa-actions .btn{text-decoration:none}
 .aa-actions .mini-tool{text-decoration:none}
 @media (max-width:480px){.aa-actions .btn{flex:1 1 100%;justify-content:center;text-align:center}}
+/* App pages: the description, tagline and feature text use the readable font; titles and facts stay pixel. */
+.app-about .lede,.app-hero-tagline,.app-detail .feature p{font-family:var(--f-read);letter-spacing:0}
+.app-about .lede{font-size:18px;line-height:1.75}
+.app-detail .feature p{font-size:16px;line-height:1.65}
+.app-hero-tagline{line-height:1.6}
