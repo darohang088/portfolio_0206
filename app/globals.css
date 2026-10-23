@@ -1287,3 +1287,7 @@ html[lang="km"] .rm-intro>p,html[lang="km"] .rm-tasks label,html[lang="km"] .rm-
 .app-about .lede{font-size:18px;line-height:1.75}
 .app-detail .feature p{font-size:16px;line-height:1.65}
 .app-hero-tagline{line-height:1.6}
+/* Descriptions everywhere use the readable font; titles, tags, buttons and badges keep the pixel look. */
+.lede,.tool-body>span:not(.test-tags),.post p,.app-tagline,.trophy p,.role-summary,.role>ul>li,.role-sec li,.ip-card p,.aa-note,.r8-lib small,.r8-hint,.ic-note,.ic-field small{font-family:var(--f-read);letter-spacing:0}
+.tool-body>span:not(.test-tags){font-size:16px;line-height:1.6}
+.post p,.app-tagline{line-height:1.6}
