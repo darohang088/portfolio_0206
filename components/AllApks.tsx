@@ -5,7 +5,6 @@ import { useLang } from "@/lib/i18n";
 import { androidVersion, mb, timeLeft, type PublicBuild } from "@/lib/buildShare";
 import { profile } from "@/data/profile";
 import QrImage from "./QrImage";
-import LangToggle from "./LangToggle";
 
 type State = { kind: "loading" } | { kind: "busy" } | { kind: "error" } | { kind: "ok"; builds: PublicBuild[] };
 
@@ -53,7 +52,6 @@ export default function AllApks() {
         <a href="/" className="ip-brand">
           {profile.name}
         </a>
-        <LangToggle />
       </header>
 
       <section className="aa-head">

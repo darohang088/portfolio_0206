@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
-import LangToggle from "./LangToggle";
 import { useLang } from "@/lib/i18n";
 import { profile } from "@/data/profile";
 
@@ -108,7 +107,6 @@ export default function Nav({ home = true }: { home?: boolean }) {
           ))}
         </ul>
         <div className="nav-actions">
-          <LangToggle />
           <ThemeToggle />
           <button
             className="menu-btn"
