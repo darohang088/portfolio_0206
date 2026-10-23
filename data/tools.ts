@@ -50,6 +50,13 @@ export const toolGroups: ToolGroup[] = [
         tags: ["R8", "Crashes", "Free"],
       },
       {
+        href: "/16kb",
+        icon: "📏",
+        name: "16 KB Page Size Checker",
+        description: "Drop an APK or AAB to see if it's ready for Android's 16 KB page size, which Google Play now requires. Runs the same ELF and zipalign checks as Google and shows which native library fails and how to fix it.",
+        tags: ["Android 15", "Google Play", "Free"],
+      },
+      {
         href: "/apk",
         icon: "🛡️",
         name: "APK Security Check",
