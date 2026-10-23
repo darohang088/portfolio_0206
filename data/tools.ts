@@ -57,6 +57,13 @@ export const toolGroups: ToolGroup[] = [
         tags: ["Android 15", "Google Play", "Free"],
       },
       {
+        href: "/play-check",
+        icon: "🚦",
+        name: "Play Store Readiness Check",
+        description: "Drop your release APK and see what Google Play will reject or question: target SDK, signing, 16 KB, restricted permissions, Android 15 and 16 changes, deprecated SDKs and security settings, each with a fix.",
+        tags: ["Google Play", "Release", "Free"],
+      },
+      {
         href: "/apk",
         icon: "🛡️",
         name: "APK Security Check",

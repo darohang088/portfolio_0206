@@ -76,7 +76,7 @@ function unzipAsync(data: Uint8Array, filter: (name: string, size: number) => bo
 }
 
 // Is the v2/v3 "APK Signature Scheme" block present? It sits right before the zip's central directory.
-function hasSigningBlock(buf: Uint8Array): boolean {
+export function hasSigningBlock(buf: Uint8Array): boolean {
   const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
   for (let i = buf.length - 22; i >= Math.max(0, buf.length - 65557); i--) {
     if (dv.getUint32(i, true) === 0x06054b50) {

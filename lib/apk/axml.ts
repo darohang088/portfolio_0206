@@ -19,6 +19,16 @@ const ATTR_IDS: Record<number, string> = {
   0x01010002: "icon",
   0x01010199: "drawable",
   0x01010272: "testOnly",
+  // IDs below are from Android 16's android.R.attr.
+  0x01010000: "theme",
+  0x0101001e: "screenOrientation",
+  0x010104eb: "fullBackupContent",
+  0x010104f6: "resizeableActivity",
+  0x01010560: "maxAspectRatio",
+  0x01010599: "foregroundServiceType",
+  0x0101059b: "minAspectRatio",
+  0x0101063e: "dataExtractionRules",
+  0x0101066c: "enableOnBackInvokedCallback",
 };
 
 export function parseAxml(buf: Uint8Array): XmlNode | null {
