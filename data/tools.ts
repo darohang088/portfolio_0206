@@ -43,6 +43,13 @@ export const toolGroups: ToolGroup[] = [
         tags: ["R8", "Release", "Free"],
       },
       {
+        href: "/retrace",
+        icon: "🧩",
+        name: "Crash Retrace",
+        description: "Turn an obfuscated release crash back into real class, method and line names. Drop your mapping.txt, paste the stack trace from Crashlytics, Play Console or logcat. Handles R8 inlining.",
+        tags: ["R8", "Crashes", "Free"],
+      },
+      {
         href: "/apk",
         icon: "🛡️",
         name: "APK Security Check",
