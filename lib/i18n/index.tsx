@@ -3,7 +3,7 @@
 // English is the default; Khmer is a full alternate. Text goes through t("English text"),
 // which looks it up in lib/i18n/km.ts. Missing entries fall back to English.
 
-import { createContext, Fragment, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, Fragment, useCallback, useContext, useState, type ReactNode } from "react";
 import { KM, KM_PATTERNS } from "./km";
 
 export type Lang = "en" | "km";
@@ -31,11 +31,6 @@ export function translate(lang: Lang, text: string, vars?: Vars): string {
 
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
-
-  // The inline script in the layout already set <html lang>; pick it up after hydration.
-  useEffect(() => {
-    if (document.documentElement.lang === "km") setLangState("km");
-  }, []);
 
   const setLang = useCallback((l: Lang) => {
     try {

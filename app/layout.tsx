@@ -25,7 +25,7 @@ const khmer = Noto_Sans_Khmer({
   display: "swap",
 });
 
-const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);if(localStorage.getItem("lang")==="km")document.documentElement.lang="km"}catch(e){}`;
+const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);localStorage.removeItem("lang")}catch(e){}`;
 
 export const metadata: Metadata = {
   title: `${profile.name} · Android & Flutter Engineer`,
@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${silkscreen.variable} ${pixelify.variable} ${khmer.variable}`} suppressHydrationWarning>
       <head>
-        {/* Apply the saved theme and language before the page paints, so they never flash. */}
+        {/* Apply the saved theme before the page paints, so it never flashes. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>

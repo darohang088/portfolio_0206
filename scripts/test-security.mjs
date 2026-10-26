@@ -63,7 +63,7 @@ try {
   const objects = new Map();
   let partCount = 0;
   const bucket = {
-    list: async () => ({ objects: [], truncated: false }),
+    list: async () => ({ objects: [...objects.keys()].map(key => ({ key, size: 5 })), truncated: false }),
     get: async key => objects.has(key) ? { text: async () => objects.get(key) } : null,
     head: async key => objects.has(key) ? { size: key.endsWith('.apk') ? 5 : objects.get(key).length } : null,
     put: async (key, value) => { objects.set(key, value); },
@@ -93,6 +93,14 @@ try {
   res = await worker.fetch(req(`/api/builds/${id}`), buildEnv, ctx);
   assert.equal(res.status, 200);
   assert.equal((await res.json()).build.uploadId, undefined);
+  res = await worker.fetch(req('/api/builds/public'), buildEnv, ctx);
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).builds.length, 1);
+  res = await worker.fetch(req(`/api/builds/${id}`, 'PATCH', { listed: false }, cookie), buildEnv, ctx);
+  assert.equal(res.status, 200);
+  res = await worker.fetch(req('/api/builds/public'), buildEnv, ctx);
+  assert.equal((await res.json()).builds.length, 0);
+
   res = await worker.fetch(req(`/api/builds/${id}`, 'DELETE'), buildEnv, ctx);
   assert.equal(res.status, 401);
   assert.equal(objects.size, 2);

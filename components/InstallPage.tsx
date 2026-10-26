@@ -6,7 +6,6 @@ import { androidVersion, mb, timeLeft, warningsFor, type Build } from "@/lib/bui
 import { profile } from "@/data/profile";
 import { AppHead } from "./BuildShare";
 import QrImage from "./QrImage";
-import LangToggle from "./LangToggle";
 
 type State = { kind: "loading" } | { kind: "missing" } | { kind: "expired" } | { kind: "busy" } | { kind: "error" } | { kind: "ok"; build: Build };
 type Device = "android" | "ios" | "desktop";
@@ -42,7 +41,6 @@ export default function InstallPage() {
         <a href="/" className="ip-brand">
           {profile.name}
         </a>
-        <LangToggle />
       </header>
 
       {state.kind === "loading" ? (

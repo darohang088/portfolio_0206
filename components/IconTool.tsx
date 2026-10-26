@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useLang } from "@/lib/i18n";
+import { ICON_HANDOFF } from "@/lib/bgremove";
 import { adaptiveForeground, adaptivePreview, buildZip, hasTransparency, loadImage, splashIcon, squareIcon, type IconOptions, type Source } from "@/lib/icons";
 
 const SWATCHES = ["#ffffff", "#06071a", "#f7c948", "#1e88e5", "#43a047", "#e53935", "#8e24aa", "#ff7043"];
@@ -43,6 +44,18 @@ export default function IconTool() {
       setError(t("That file isn't an image we can read. Try a PNG, JPG, WebP or SVG."));
     }
   };
+
+  // A cut-out sent over from the Background Remover.
+  useEffect(() => {
+    let hand: { name: string; url: string } | null = null;
+    try {
+      hand = JSON.parse(sessionStorage.getItem(ICON_HANDOFF) || "null");
+      sessionStorage.removeItem(ICON_HANDOFF);
+    } catch {
+      hand = null;
+    }
+    if (hand?.url?.startsWith("data:image/png;base64,")) fetch(hand.url).then((r) => r.blob()).then((b) => use(b, hand!.name));
+  }, []);
 
   useEffect(() => {
     if (!src) return setPrev(null);
