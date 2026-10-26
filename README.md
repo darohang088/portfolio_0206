@@ -71,3 +71,38 @@ The site is exported as static files into `out/` (see `next.config.mjs`), and `w
 4. Click **Deploy**. You get a free `*.workers.dev` link, and every push to `main` redeploys.
 
 To deploy from your own computer instead: `npm run build`, then `npx wrangler login` and `npx wrangler deploy`.
+
+## Security and owner access
+
+Owner access uses a one-hour signed `HttpOnly`, `Secure`, `SameSite=Strict`
+cookie. The password is sent only during sign-in, and is never saved in browser
+storage. Signing out clears the browser cookie; rotating `UPLOAD_SECRET`
+invalidates all existing sessions. Use HTTPS for Worker development and production.
+
+Before deploying this security update:
+
+1. Set Cloudflare's `UPLOAD_SECRET` to a unique random value of at least 32
+   characters (64 recommended). The local `.dev.vars` contains a newly generated
+   value; keep it private and store your chosen production value in a password manager.
+   Old short secrets deliberately disable owner access until replaced.
+2. Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` as Cloudflare secrets if messaging
+   is enabled. Never place secrets in `NEXT_PUBLIC_*`, source code, or Git.
+3. Keep all three rate-limit bindings in `wrangler.jsonc`. APIs return 503 when
+   their limiter is missing or unavailable. Monitor Worker errors and 401/429/503
+   responses in Cloudflare, and configure usage notifications for Workers and R2.
+4. Run `npm run build` before deploying. It generates `out/_headers` with
+   page-specific CSP hashes. Deploy the Worker and assets together; do not edit
+   exported inline scripts afterward. Worker-rendered install pages also set CSP.
+5. Enable MFA on Cloudflare, GitHub, and Telegram, and use narrowly scoped deploy
+   tokens. Account settings must be checked in those services.
+
+Build links are bearer links: anyone who receives one can download the APK until
+it expires or you delete it. New links use longer random identifiers. Share only
+builds suitable for that access model. Private tester authentication would require
+a separate access policy. R2 storage quotas are best-effort application checks;
+monitor actual usage and configure a bucket lifecycle rule to abort incomplete
+multipart uploads and remove expired objects as a second safety net.
+
+Run `npm run test:security` after building to check authentication, session expiry,
+CSRF, request limits, rate-limit failures, and CSP output. Run `npm audit` regularly.
+PostCSS is overridden to a patched 8.x release until Next.js includes it directly.

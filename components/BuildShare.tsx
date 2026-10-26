@@ -8,18 +8,10 @@ import QrImage from "./QrImage";
 
 type Step = { kind: "idle" } | { kind: "reading" } | { kind: "ready"; file: File; info: AppInfo } | { kind: "uploading"; file: File; info: AppInfo; sent: number } | { kind: "done"; url: string; info: AppInfo };
 
-const readSecret = () => {
-  try {
-    return sessionStorage.getItem(SECRET_KEY) ?? localStorage.getItem(SECRET_KEY);
-  } catch {
-    return null;
-  }
-};
-
 // Build Share (owner page): drop an APK, get a short download link + QR for testers.
 export default function BuildShare() {
   const { t } = useLang();
-  const [secret, setSecret] = useState<string | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
   const [checked, setChecked] = useState(false);
   const [builds, setBuilds] = useState<Build[]>([]);
   const [usage, setUsage] = useState<{ used: number; cap: number } | null>(null);
@@ -31,9 +23,9 @@ export default function BuildShare() {
   const input = useRef<HTMLInputElement>(null);
 
   const refresh = useCallback(
-    async (s: string) => {
+    async () => {
       try {
-        const { status, data } = await api<{ builds: Build[]; used: number; cap: number }>("/api/builds", s);
+        const { status, data } = await api<{ builds: Build[]; used: number; cap: number }>("/api/builds");
         if (status === 401) return "wrong" as const;
         if (!data.ok) return data.error ?? t("Something went wrong.");
         setBuilds(data.builds);
@@ -46,14 +38,10 @@ export default function BuildShare() {
     [t],
   );
 
-  // Use a remembered password if there is one.
   useEffect(() => {
-    const s = readSecret();
-    if (!s) return setChecked(true);
-    refresh(s).then((r) => {
-      if (r === "ok") setSecret(s);
-      setChecked(true);
-    });
+    // Remove credentials saved by older versions; authentication now uses HttpOnly cookies.
+    try { sessionStorage.removeItem(SECRET_KEY); localStorage.removeItem(SECRET_KEY); } catch {}
+    refresh().then(r => { if (r === "ok") setAuthenticated(true); setChecked(true); });
   }, [refresh]);
 
   // Start fresh each time the page is opened, also when coming back with the browser's Back button.
@@ -68,12 +56,10 @@ export default function BuildShare() {
     return () => window.removeEventListener("pageshow", onShow);
   }, []);
 
-  const lock = () => {
-    try {
-      sessionStorage.removeItem(SECRET_KEY);
-      localStorage.removeItem(SECRET_KEY);
-    } catch {}
-    setSecret(null);
+  const lock = async () => {
+    const { data } = await api("/api/session", { method: "DELETE" });
+    if (!data.ok) { setError(data.error ?? "Couldn't sign out. Try again."); return; }
+    setAuthenticated(false);
     setBuilds([]);
     setStep({ kind: "idle" });
   };
@@ -95,20 +81,20 @@ export default function BuildShare() {
   };
 
   const create = async () => {
-    if (step.kind !== "ready" || !secret) return;
+    if (step.kind !== "ready" || !authenticated) return;
     const { file, info } = step;
     setError("");
     setStep({ kind: "uploading", file, info, sent: 0 });
     const { icon, ...rest } = info;
     try {
-      const { status, data } = await api<{ id: string; partSize: number }>("/api/builds", secret, { method: "POST", body: JSON.stringify({ info: rest, icon, size: file.size, fileName: file.name, days, note }) });
+      const { status, data } = await api<{ id: string; partSize: number }>("/api/builds", { method: "POST", body: JSON.stringify({ info: rest, icon, size: file.size, fileName: file.name, days, note }) });
       if (status === 401) return lock();
       if (!data.ok) throw new Error(data.error);
-      const up = await uploadApk(data.id, file, data.partSize, secret, (sent) => setStep({ kind: "uploading", file, info, sent }));
+      const up = await uploadApk(data.id, file, data.partSize, (sent) => setStep({ kind: "uploading", file, info, sent }));
       if (!up.ok || !up.url) throw new Error(up.error);
       setStep({ kind: "done", url: up.url, info });
       setNote("");
-      refresh(secret);
+      refresh();
     } catch (e) {
       setStep({ kind: "ready", file, info });
       setError(t(e instanceof Error && e.message ? e.message : "Upload failed. Try again."));
@@ -116,13 +102,15 @@ export default function BuildShare() {
   };
 
   const remove = async (b: Build) => {
-    if (!secret || !confirm(t("Delete {name} {version}? The link will stop working.", { name: b.label, version: b.versionName }))) return;
-    await api("/api/builds/" + b.id, secret, { method: "DELETE" });
-    refresh(secret);
+    if (!authenticated || !confirm(t("Delete {name} {version}? The link will stop working.", { name: b.label, version: b.versionName }))) return;
+    const { status, data } = await api("/api/builds/" + b.id, { method: "DELETE" });
+    if (status === 401) return lock();
+    if (!data.ok) { setError(data.error ?? "Couldn't delete this build."); return; }
+    refresh();
   };
 
   if (!checked) return null;
-  if (!secret) return <Unlock onUnlock={setSecret} check={refresh} />;
+  if (!authenticated) return <Unlock onUnlock={() => setAuthenticated(true)} check={refresh} />;
 
   return (
     <div className="bs">
@@ -226,10 +214,9 @@ export default function BuildShare() {
   );
 }
 
-function Unlock({ onUnlock, check }: { onUnlock: (s: string) => void; check: (s: string) => Promise<string> }) {
+function Unlock({ onUnlock, check }: { onUnlock: () => void; check: () => Promise<string> }) {
   const { t } = useLang();
   const [value, setValue] = useState("");
-  const [remember, setRemember] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   return (
@@ -240,25 +227,21 @@ function Unlock({ onUnlock, check }: { onUnlock: (s: string) => void; check: (s:
         if (!value || busy) return;
         setBusy(true);
         setError("");
-        const r = await check(value);
+        const { data } = await api("/api/session", { method: "POST", body: JSON.stringify({ password: value }) });
+        setValue("");
+        const r = data.ok ? await check() : data.error ?? "Sign in failed.";
         setBusy(false);
         if (r === "wrong") return setError(t("Wrong password. Try again."));
         if (r !== "ok") return setError(r);
-        try {
-          (remember ? localStorage : sessionStorage).setItem(SECRET_KEY, value);
-        } catch {}
-        onUnlock(value);
+        onUnlock();
       }}
     >
       <span className="pin-icon" aria-hidden="true">
         📲
       </span>
       <h3>{t("Owner only")}</h3>
-      <p>{t("Enter the upload password (the UPLOAD_SECRET set in Cloudflare) to share builds.")}</p>
+      <p>{t("Enter your owner password to share builds. Your session expires after one hour.")}</p>
       <input type="password" autoComplete="current-password" value={value} onChange={(e) => setValue(e.target.value)} placeholder={t("Upload password")} aria-label={t("Upload password")} autoFocus />
-      <label className="bs-remember">
-        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> {t("Remember on this device")}
-      </label>
       <button className="btn btn-gold" type="submit" disabled={busy}>
         {t(busy ? "Checking…" : "Unlock ▶")}
       </button>

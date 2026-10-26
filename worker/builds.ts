@@ -1,3 +1,4 @@
+import { hasSession, validSecret, readJson, HttpError } from "./security";
 // Build Share: Daro uploads a test APK, testers get a short link (/i/<id>) with a download page.
 //
 // Storage: the R2 bucket bound as BUILDS ("app-builds"). Each build is two objects:
@@ -76,28 +77,8 @@ const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...extra } });
 const metaKey = (id: string) => `builds/${id}.json`;
 const apkKey = (id: string) => `builds/${id}.apk`;
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-// Compare secrets without leaking how many characters matched.
-async function sameSecret(a: string, b: string) {
-  const enc = new TextEncoder();
-  const [x, y] = await Promise.all([crypto.subtle.digest("SHA-256", enc.encode(a)), crypto.subtle.digest("SHA-256", enc.encode(b))]);
-  const ua = new Uint8Array(x);
-  const ub = new Uint8Array(y);
-  let diff = 0;
-  for (let i = 0; i < ua.length; i++) diff |= ua[i] ^ ub[i];
-  return diff === 0;
-}
-
-async function isOwner(request: Request, env: BuildEnv) {
-  const given = /^Bearer (.+)$/.exec(request.headers.get("authorization") ?? "")?.[1] ?? "";
-  if (given && env.UPLOAD_SECRET && (await sameSecret(given, env.UPLOAD_SECRET))) return true;
-  await sleep(600); // slow down password guessing
-  return false;
-}
-
 function newId() {
-  const r = crypto.getRandomValues(new Uint8Array(7));
+  const r = crypto.getRandomValues(new Uint8Array(24));
   return [...r].map((n) => ID_CHARS[n % ID_CHARS.length]).join("");
 }
 
@@ -187,10 +168,11 @@ function safeFileName(m: BuildMeta) {
 
 export async function handleBuilds(request: Request, env: BuildEnv, url: URL, waitUntil: (p: Promise<unknown>) => void): Promise<Response> {
   const bucket = env.BUILDS;
-  if (!bucket || !env.UPLOAD_SECRET) return json({ ok: false, error: "Build sharing isn't set up yet." }, 503);
+  if (!bucket || !validSecret(env.UPLOAD_SECRET)) return json({ ok: false, error: "Build sharing isn't set up yet." }, 503);
   const parts = url.pathname.split("/").filter(Boolean); // ["api", "builds", id?, action?]
   const id = parts[2];
   const action = parts[3];
+  if (parts.length > 4 || (id && !/^[a-z0-9]{7,24}$/.test(id))) return json({ ok: false, error: "Not found." }, 404);
   const method = request.method;
 
   // ---- public: details and download ----
@@ -223,7 +205,7 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
   }
 
   // ---- owner only ----
-  if (!(await isOwner(request, env))) return json({ ok: false, error: "Wrong password." }, 401);
+  if (!(await hasSession(request, env.UPLOAD_SECRET))) return json({ ok: false, error: "Wrong password." }, 401);
 
   if (!id && method === "GET") {
     const { builds, used } = await sweep(bucket);
@@ -233,8 +215,9 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
   if (!id && method === "POST") {
     let body: Record<string, unknown>;
     try {
-      body = await request.json();
-    } catch {
+      body = await readJson(request, 220_000);
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
       return json({ ok: false, error: "Couldn't read the request." }, 400);
     }
     const info = cleanInfo(body.info);
@@ -269,11 +252,11 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
   // Upload one part of the APK: PUT /api/builds/<id>/part?n=1 (parts are numbered from 1).
   if (id && action === "part" && method === "PUT") {
     const m = await readMeta(bucket, id);
-    if (!m || m.ready || !m.uploadId) return json({ ok: false, error: "This upload was already finished or doesn't exist." }, 409);
+    if (!m || m.ready || !m.uploadId || !isLive(m)) return json({ ok: false, error: "This upload was already finished or doesn't exist." }, 409);
     const n = Number(url.searchParams.get("n"));
     const length = Number(request.headers.get("content-length") ?? 0);
-    if (!Number.isInteger(n) || n < 1 || n > Math.ceil(MAX_APK / PART_SIZE)) return json({ ok: false, error: "Bad part number." }, 400);
-    if (!length || length > PART_SIZE || !request.body) return json({ ok: false, error: "Bad part size." }, 413);
+    if (!Number.isInteger(n) || n < 1 || n > Math.ceil(m.size / PART_SIZE)) return json({ ok: false, error: "Bad part number." }, 400);
+    if (length !== Math.min(PART_SIZE, m.size - (n - 1) * PART_SIZE) || !request.body) return json({ ok: false, error: "Bad part size." }, 413);
     const part = await bucket.resumeMultipartUpload(apkKey(id), m.uploadId).uploadPart(n, request.body);
     return json({ ok: true, partNumber: part.partNumber, etag: part.etag });
   }
@@ -281,12 +264,13 @@ export async function handleBuilds(request: Request, env: BuildEnv, url: URL, wa
   // Join the parts into the final APK: POST /api/builds/<id>/complete { parts: [{ partNumber, etag }] }
   if (id && action === "complete" && method === "POST") {
     const m = await readMeta(bucket, id);
-    if (!m || m.ready || !m.uploadId) return json({ ok: false, error: "This upload was already finished or doesn't exist." }, 409);
+    if (!m || m.ready || !m.uploadId || !isLive(m)) return json({ ok: false, error: "This upload was already finished or doesn't exist." }, 409);
     let parts: { partNumber: number; etag: string }[] = [];
     try {
-      const body = (await request.json()) as { parts?: unknown };
+      const body = (await readJson(request, 4096)) as { parts?: unknown };
       parts = Array.isArray(body.parts) ? body.parts.filter((p): p is { partNumber: number; etag: string } => !!p && typeof p.partNumber === "number" && typeof p.etag === "string") : [];
-    } catch {}
+    } catch (error) { if (error instanceof HttpError) throw error; }
+    if (parts.length !== Math.ceil(m.size / PART_SIZE) || parts.some((p, i) => !Number.isInteger(p.partNumber) || p.partNumber !== i + 1 || !p.etag || p.etag.length > 200)) return json({ ok: false, error: "Invalid upload parts." }, 400);
     if (!parts.length) return json({ ok: false, error: "Couldn't read the request." }, 400);
     try {
       await bucket.resumeMultipartUpload(apkKey(id), m.uploadId).complete(parts.sort((a, b) => a.partNumber - b.partNumber));

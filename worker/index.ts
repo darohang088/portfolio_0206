@@ -1,3 +1,4 @@
+import { HttpError, readJson, requireSameOrigin, validSecret, matchesSecret, sessionCookie, clearSessionCookie, hasSession, securityHeaders, htmlCsp } from "./security";
 // Cloudflare Worker for the portfolio.
 // Serves the static site from `out/`, handles POST /api/message by forwarding the
 // visitor's message to Daro's Telegram through a bot, and runs Build Share (/api/builds, /i/<id>).
@@ -95,8 +96,9 @@ export async function handleMessage(request: Request, env: Env, send: typeof fet
 
   let data: Payload;
   try {
-    data = await request.json();
-  } catch {
+    data = await readJson(request, 16_384);
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
     return json({ ok: false, error: "Couldn't read the message." }, 400);
   }
 
@@ -132,12 +134,12 @@ export async function handleMessage(request: Request, env: Env, send: typeof fet
 // Per-visitor limits so one bot can't spam Telegram, hammer storage or guess the upload password.
 // Requests over the limit get 429 and can retry after a minute.
 async function tooMany(limiter: RateLimit | undefined, request: Request, scope: string) {
-  if (!limiter) return false; // binding not set up (e.g. older config): don't block anyone
+  if (!limiter) throw new HttpError(503, "Protection temporarily unavailable.");
   const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
   try {
     return !(await limiter.limit({ key: `${scope}:${ip}` })).success;
   } catch {
-    return false;
+    throw new HttpError(503, "Protection temporarily unavailable.");
   }
 }
 
@@ -152,9 +154,19 @@ const slowDown = (html = false) =>
 // Owner actions: listing, creating, uploading parts, finishing and deleting builds.
 const isOwnerCall = (request: Request, url: URL) => request.headers.has("authorization") || (request.method !== "GET" && request.method !== "HEAD") || url.pathname === "/api/builds" || url.pathname === "/api/builds/";
 
-export default {
-  async fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
+async function route(request: Request, env: Env, ctx: Ctx): Promise<Response> {
     const url = new URL(request.url);
+    if (url.pathname.startsWith("/api/") && !["GET", "HEAD"].includes(request.method)) requireSameOrigin(request);
+    if (url.pathname === "/api/session") {
+      if (await tooMany(env.RL_OWNER, request, "owner")) return slowDown();
+      if (!validSecret(env.UPLOAD_SECRET)) throw new HttpError(503, "Owner access requires a secret of at least 32 characters.");
+      if (request.method === "DELETE") return new Response(null, { status: 204, headers: { "set-cookie": clearSessionCookie() } });
+      if (request.method === "GET") return json({ ok: await hasSession(request, env.UPLOAD_SECRET) });
+      if (request.method !== "POST") return json({ ok: false }, 405);
+      const body = await readJson(request, 2048);
+      if (typeof body.password !== "string" || body.password.length > 1024 || !(await matchesSecret(body.password, env.UPLOAD_SECRET))) return json({ ok: false, error: "Wrong password." }, 401);
+      return new Response(JSON.stringify({ ok: true }), { headers: { "content-type": "application/json", "set-cookie": await sessionCookie(env.UPLOAD_SECRET) } });
+    }
     if (url.pathname === "/api/message") {
       if (request.method === "POST" && (await tooMany(env.RL_CHAT, request, "chat"))) return slowDown();
       return handleMessage(request, env);
@@ -167,11 +179,29 @@ export default {
     // Short tester links: /i/<id> shows the download page, which reads the id from the address.
     if (/^\/i\/[a-z0-9]+\/?$/.test(url.pathname)) {
       const page = await env.ASSETS.fetch(new Request(new URL("/install", url), request));
-      const res = new Response(page.body, page);
+      const html = await page.text();
+      const res = new Response(request.method === "HEAD" ? null : html, page);
+      res.headers.set("content-security-policy", await htmlCsp(html));
       res.headers.set("x-robots-tag", "noindex");
       return res;
     }
     return env.ASSETS.fetch(request);
+}
+
+export default {
+  async fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
+    let response: Response;
+    try { response = await route(request, env, ctx); }
+    catch (error) {
+      response = error instanceof HttpError ? json({ ok: false, error: error.message }, error.status) : json({ ok: false, error: "Service temporarily unavailable." }, 500);
+    }
+    const result = new Response(response.body, response);
+    for (const [name, value] of Object.entries(securityHeaders)) result.headers.set(name, value);
+    if (new URL(request.url).pathname.startsWith("/api/")) {
+      result.headers.set("cache-control", "no-store");
+      result.headers.set("content-security-policy", "default-src 'none'; frame-ancestors 'none'");
+    }
+    return result;
   },
 
   // Daily clean-up of expired builds (the bucket's lifecycle rule is a second safety net).

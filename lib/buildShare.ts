@@ -46,14 +46,19 @@ export function warningsFor(b: Pick<AppInfo, "testOnly" | "split" | "signed" | "
 
 export const SECRET_KEY = "build-share-secret";
 
-export async function api<T>(path: string, secret: string | null, init: RequestInit = {}): Promise<{ status: number; data: T & { ok: boolean; error?: string } }> {
-  const res = await fetch(path, {
+export async function api<T>(path: string, init: RequestInit = {}): Promise<{ status: number; data: T & { ok: boolean; error?: string } }> {
+  let res: Response;
+  try { res = await fetch(path, {
     ...init,
-    headers: { ...(init.headers ?? {}), ...(secret ? { authorization: `Bearer ${secret}` } : {}), ...(init.body ? { "content-type": "application/json" } : {}) },
-  });
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: { ...(init.headers ?? {}), ...(init.body ? { "content-type": "application/json" } : {}) },
+  }); } catch {
+    return { status: 0, data: { ok: false, error: "Couldn't reach the server. Try again." } as T & { ok: boolean; error?: string } };
+  }
   let data: T & { ok: boolean; error?: string };
   try {
-    data = await res.json();
+    data = res.status === 204 ? { ok: true } as typeof data : await res.json();
   } catch {
     data = { ok: false, error: "The server didn't answer properly." } as T & { ok: boolean; error?: string };
   }
@@ -62,11 +67,11 @@ export async function api<T>(path: string, secret: string | null, init: RequestI
 
 // Upload the APK in parts (each well under the Worker's 100 MB request limit), with progress.
 // fetch can't report upload progress, XMLHttpRequest can.
-function sendPart(id: string, n: number, blob: Blob, secret: string, onProgress: (sent: number) => void): Promise<{ ok: boolean; etag?: string; partNumber?: number; error?: string }> {
+function sendPart(id: string, n: number, blob: Blob, onProgress: (sent: number) => void): Promise<{ ok: boolean; etag?: string; partNumber?: number; error?: string }> {
   return new Promise((resolve) => {
     const x = new XMLHttpRequest();
     x.open("PUT", `/api/builds/${id}/part?n=${n}`);
-    x.setRequestHeader("authorization", `Bearer ${secret}`);
+    x.withCredentials = true;
     x.setRequestHeader("content-type", "application/octet-stream");
     x.upload.onprogress = (e) => onProgress(e.loaded);
     x.onload = () => {
@@ -81,16 +86,16 @@ function sendPart(id: string, n: number, blob: Blob, secret: string, onProgress:
   });
 }
 
-export async function uploadApk(id: string, file: File, partSize: number, secret: string, onProgress: (sent: number) => void): Promise<{ ok: boolean; url?: string; error?: string }> {
+export async function uploadApk(id: string, file: File, partSize: number, onProgress: (sent: number) => void): Promise<{ ok: boolean; url?: string; error?: string }> {
   const parts: { partNumber: number; etag: string }[] = [];
   for (let n = 1, start = 0; start < file.size; n++, start += partSize) {
     // Retry a part once if the connection drops.
-    let r = await sendPart(id, n, file.slice(start, start + partSize), secret, (sent) => onProgress(start + sent));
-    if (!r.ok) r = await sendPart(id, n, file.slice(start, start + partSize), secret, (sent) => onProgress(start + sent));
+    let r = await sendPart(id, n, file.slice(start, start + partSize), (sent) => onProgress(start + sent));
+    if (!r.ok) r = await sendPart(id, n, file.slice(start, start + partSize), (sent) => onProgress(start + sent));
     if (!r.ok || !r.etag) return { ok: false, error: r.error };
     parts.push({ partNumber: n, etag: r.etag });
   }
-  const { data } = await api<{ url: string }>(`/api/builds/${id}/complete`, secret, { method: "POST", body: JSON.stringify({ parts }) });
+  const { data } = await api<{ url: string }>(`/api/builds/${id}/complete`, { method: "POST", body: JSON.stringify({ parts }) });
   return data;
 }
 
