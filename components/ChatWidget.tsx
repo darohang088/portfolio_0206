@@ -388,6 +388,17 @@ export default function ChatWidget() {
             ? <div className="spam-sent">{t("✔ Repeated sends blocked. Further messages must wait for the cooldown.")}</div>
             : <span className="spam-cursor" aria-hidden="true" />}
         </div>
+        <div className="spam-term" aria-label={t("Security simulation — visual effects only")}>
+          <div>{t("> Attempting email access ... SCANNING")}</div>
+          {guardProgress >= 20 && <div>{t("> Tracing IP address ........ FOUND")}</div>}
+          {guardProgress >= 40 && <div>{t("> Locating lat, long ........ FOUND")}</div>}
+          {guardProgress >= 60 && <div>{t("> Copying cookies ........... DONE")}</div>}
+          {guardProgress >= 80 && <div>{t("> Sending report to Daro ... {n}%", { n: guardProgress })}</div>}
+          <span className="spam-bar" aria-hidden="true">
+            <i style={{ transform: `scaleX(${guardProgress / 100})` }} />
+          </span>
+          {guardProgress === 100 && <div className="spam-sent">{t("✔ Simulation complete: IP, location and cookies sent to Daro (fictional).")}</div>}
+        </div>
         <p className="spam-timer" role="status">
           {cooldown > 0 ? t("Try again in {n}s", { n: cooldown }) : t("You can send again now.")}
         </p>
