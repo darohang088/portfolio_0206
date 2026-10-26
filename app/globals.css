@@ -1518,3 +1518,6 @@ html[lang="km"] .rm-intro>p,html[lang="km"] .rm-tasks label,html[lang="km"] .rm-
 .bgr-actions .mini-tool:disabled{opacity:.6;cursor:progress}
 .bgr-main{font-size:16px}
 @media (max-width:900px){.bgr-work{grid-template-columns:minmax(0,1fr)}.bgr-side{position:static}}
+
+/* Keep blocked Send attempts available to the warning handler without submitting again. */
+.chat-send button[aria-disabled="true"]{opacity:.65;cursor:not-allowed}

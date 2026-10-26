@@ -31,6 +31,54 @@ export default function ChatWidget() {
   const [invalid, setInvalid] = useState<Field[]>([]);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
+  const inFlight = useRef(false);
+  const cooldownUntil = useRef(0);
+  const [cooldown, setCooldown] = useState(0);
+  const spamWarning = useRef<HTMLDialogElement>(null);
+  const blockedClicks = useRef<number[]>([]);
+  const [blockedCount, setBlockedCount] = useState(0);
+  const [warningOpen, setWarningOpen] = useState(false);
+  const [guardProgress, setGuardProgress] = useState(0);
+
+  // Visual confirmation of the local guard; this performs no tracking or network requests.
+  useEffect(() => {
+    if (!warningOpen) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setGuardProgress(100);
+      return;
+    }
+    const started = Date.now();
+    const timer = window.setInterval(() => {
+      const progress = Math.min(100, Math.floor((Date.now() - started) / 24));
+      setGuardProgress(progress);
+      if (progress === 100) window.clearInterval(timer);
+    }, 60);
+    return () => window.clearInterval(timer);
+  }, [warningOpen]);
+
+  const showSpamWarning = () => {
+    const seconds = Math.max(30, Math.ceil((cooldownUntil.current - Date.now()) / 1000));
+    pauseSending(seconds);
+    if (!spamWarning.current?.open) {
+      setGuardProgress(0);
+      setWarningOpen(true);
+      spamWarning.current?.showModal();
+    }
+  };
+
+  const pauseSending = (seconds: number) => {
+    cooldownUntil.current = Math.max(cooldownUntil.current, Date.now() + seconds * 1000);
+    setCooldown(Math.ceil((cooldownUntil.current - Date.now()) / 1000));
+  };
+
+  const coolingDown = cooldown > 0;
+  useEffect(() => {
+    if (!coolingDown) return;
+    const timer = window.setInterval(() => {
+      setCooldown(Math.max(0, Math.ceil((cooldownUntil.current - Date.now()) / 1000)));
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, [coolingDown]);
   const greeted = useRef(false);
   const startedAt = useRef(0);
   const nextId = useRef(0);
@@ -110,9 +158,10 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeChat();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !spamWarning.current?.open && closeChat();
     const onDown = (e: PointerEvent) => {
       const target = e.target as Node;
+      if (spamWarning.current?.open) return;
       if (!panel.current?.contains(target) && !fab.current?.contains(target)) closeChat();
     };
     window.addEventListener("keydown", onKey);
@@ -145,7 +194,15 @@ export default function ChatWidget() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (sending) return;
+    // A ref blocks repeat submissions immediately, before React updates the button.
+    if (inFlight.current || Date.now() < cooldownUntil.current) {
+      const now = Date.now();
+      blockedClicks.current = [...blockedClicks.current.filter(time => now - time < 4000), now];
+      setBlockedCount(blockedClicks.current.length);
+      if (blockedClicks.current.length >= 3) showSpamWarning();
+      return;
+    }
+    blockedClicks.current = [];
     const bad: Field[] = [];
     if (!form.name.trim()) bad.push("name");
     const contact = form.email.trim();
@@ -159,6 +216,7 @@ export default function ChatWidget() {
     setError("");
     const text = form.message.trim();
     const first = form.name.trim().split(" ")[0];
+    inFlight.current = true;
     add("me", text);
     setSending(true);
     try {
@@ -169,16 +227,23 @@ export default function ChatWidget() {
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean };
       if (res.status === 429) {
+        const retry = res.headers.get("retry-after") ?? "";
+        const seconds = /^\d+$/.test(retry) ? Number(retry) : Math.ceil((Date.parse(retry) - Date.now()) / 1000);
+        pauseSending(Number.isFinite(seconds) ? Math.min(3600, Math.max(1, seconds)) : 60);
+        showSpamWarning();
         await botSay(t("Whoa, that's a lot of messages! Wait a minute, then send again."), 500);
         return;
       }
       if (!res.ok || !data.ok) throw new Error("not sent");
-      setForm((f) => ({ ...f, message: "" }));
+      pauseSending(15);
+      setForm((f) => f.message.trim() === text ? { ...f, message: "" } : f);
       const r = replyWhere(contact);
       await botSay(t(r.how === "email" ? "Sent! Thanks, {name}. Daro will reply by email to {to}." : "Sent! Thanks, {name}. Daro will reply on Telegram to {to}.", { name: first, to: r.to }), 700);
     } catch {
+      pauseSending(5);
       await botSay(t("Sorry, that didn't send. Please email Daro at {email} instead.", { email: profile.email }), 500);
     } finally {
+      inFlight.current = false;
       setSending(false);
     }
   };
@@ -251,7 +316,7 @@ export default function ChatWidget() {
           )}
         </div>
 
-        <form className="chat-form" onSubmit={submit} noValidate>
+        <form className="chat-form" onSubmit={submit} aria-busy={sending} noValidate>
           <div className="chat-row">
             <input ref={nameInput} id="chatName" type="text" placeholder={t("Your name")} autoComplete="name" aria-label={t("Your name")} maxLength={80} {...field("name")} />
             <input id="chatEmail" type="text" inputMode="email" placeholder={t("Email or Telegram @username")} autoComplete="email" aria-label={t("Email or Telegram username, for Daro's reply")} maxLength={120} {...field("email")} />
@@ -289,13 +354,47 @@ export default function ChatWidget() {
             {error}
           </p>
           <div className="chat-send">
-            <small>{t("Daro replies to you there")}</small>
-            <button className="btn btn-gold" type="submit" disabled={sending}>
-              {sending ? t("Sending…") : t("Send ▶")}
+            <small role="status">{cooldown > 0 ? t("Please wait {n}s before sending again.", { n: cooldown }) : t("Daro replies to you there")}</small>
+            <button className="btn btn-gold" type="submit" aria-disabled={sending || cooldown > 0}>
+              {sending ? t("Sending…") : cooldown > 0 ? t("Wait {n}s", { n: cooldown }) : t("Send ▶")}
             </button>
           </div>
         </form>
       </section>
+
+      <dialog
+        ref={spamWarning}
+        className="spam-dialog"
+        aria-labelledby="chatSpamTitle"
+        aria-describedby="chatSpamDescription"
+        onClose={() => { blockedClicks.current = []; setWarningOpen(false); }}
+      >
+        <p className="spam-tag">{t("⚠ Spam protection activated")}</p>
+        <h3 id="chatSpamTitle">{t("Slow down!")}</h3>
+        <p id="chatSpamDescription">
+          {blockedCount >= 3
+            ? t("You pressed Send repeatedly while sending was locked. Extra attempts are blocked.")
+            : t("Too many messages. Sending is temporarily locked.")}
+        </p>
+        <div className="spam-term">
+          <div>{t("> Rapid-send protection .. ACTIVE")}</div>
+          {guardProgress >= 25 && <div>{t("> Extra send attempts .... BLOCKED")}</div>}
+          {guardProgress >= 50 && <div>{t("> Extra Telegram sends ... BLOCKED")}</div>}
+          {guardProgress >= 75 && <div>{t("> Local guard check ...... {n}%", { n: guardProgress })}</div>}
+          <span className="spam-bar" role="progressbar" aria-label={t("Spam protection check")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={guardProgress}>
+            <i style={{ transform: `scaleX(${guardProgress / 100})` }} />
+          </span>
+          {guardProgress === 100
+            ? <div className="spam-sent">{t("✔ Repeated sends blocked. Further messages must wait for the cooldown.")}</div>
+            : <span className="spam-cursor" aria-hidden="true" />}
+        </div>
+        <p className="spam-timer" role="status">
+          {cooldown > 0 ? t("Try again in {n}s", { n: cooldown }) : t("You can send again now.")}
+        </p>
+        <button className="btn btn-gold" type="button" autoFocus onClick={() => spamWarning.current?.close()}>
+          {t("OK, I'll wait")}
+        </button>
+      </dialog>
     </>
   );
 }
