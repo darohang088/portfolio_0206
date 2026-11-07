@@ -5,6 +5,10 @@ export type ToolGroup = { title: string; tools: Tool[] };
 
 export const toolGroups: ToolGroup[] = [
   {
+    title: "App Links & Growth",
+    tools: [{ href: "/dynamic-links", icon: "🔗", name: "Dynamic Links", description: "Set up Android, iOS and web destinations, prepare link drafts, and view your analytics workspace.", tags: ["Setup", "Links", "Analytics"] }],
+  },
+  {
     title: "Signing & Build Inspection",
     tools: [
       {
